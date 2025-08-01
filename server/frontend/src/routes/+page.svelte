@@ -1,4 +1,12 @@
 <script>
+  import { goto } from '$app/navigation';
+
+  /**
+   * Navigates to the difficulty selection page
+   */
+  const startGame = () => {
+    goto('/difficulty');
+  };
 </script>
 
 <div class="page-container">
@@ -14,7 +22,7 @@
     </div>
 
     <div class="flex-center">
-      <button class="btn btn-primary btn-large">START GAME</button>
+      <button class="btn btn-primary btn-large" onclick={startGame}>START GAME</button>
     </div>
 
     <div class="flex-center gap-4">
