@@ -42,8 +42,9 @@
     /* Typography Tokens */
     --font-family-primary: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-family-display: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    
+
     /* Font Sizes - Mobile First with Fluid Typography */
+    --font-size-2xs: clamp(0.625rem, 0.6rem + 0.125vw, 0.75rem);
     --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
     --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
     --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
@@ -65,17 +66,18 @@
 
     /* Spacing Tokens - 8px Base Unit */
     --space-0: 0;
-    --space-1: 0.25rem;   /* 4px */
-    --space-2: 0.5rem;    /* 8px */
-    --space-3: 0.75rem;   /* 12px */
-    --space-4: 1rem;      /* 16px */
-    --space-5: 1.25rem;   /* 20px */
-    --space-6: 1.5rem;    /* 24px */
-    --space-8: 2rem;      /* 32px */
-    --space-10: 2.5rem;   /* 40px */
-    --space-12: 3rem;     /* 48px */
-    --space-16: 4rem;     /* 64px */
-    --space-20: 5rem;     /* 80px */
+    --space-0-5: 0.125rem; /* 2px */
+    --space-1: 0.25rem; /* 4px */
+    --space-2: 0.5rem; /* 8px */
+    --space-3: 0.75rem; /* 12px */
+    --space-4: 1rem; /* 16px */
+    --space-5: 1.25rem; /* 20px */
+    --space-6: 1.5rem; /* 24px */
+    --space-8: 2rem; /* 32px */
+    --space-10: 2.5rem; /* 40px */
+    --space-12: 3rem; /* 48px */
+    --space-16: 4rem; /* 64px */
+    --space-20: 5rem; /* 80px */
 
     /* Border Radius */
     --radius-none: 0;
@@ -306,8 +308,8 @@
     border-right: var(--sudoku-border-section) solid var(--color-neutral-800);
   }
 
-  .sudoku-cell:nth-child(n+19):nth-child(-n+27),
-  .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+  .sudoku-cell:nth-child(n + 19):nth-child(-n + 27),
+  .sudoku-cell:nth-child(n + 46):nth-child(-n + 54) {
     border-bottom: var(--sudoku-border-section) solid var(--color-neutral-800);
   }
 
@@ -424,4 +426,3 @@
     margin-top: var(--space-6);
   }
 }
-

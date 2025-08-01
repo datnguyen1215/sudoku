@@ -1,5 +1,6 @@
 <script>
   import { goto } from '$app/navigation';
+  import { createGameSession } from '$utils/gameSession.js';
 
   /**
    * @typedef {Object} DifficultyLevel
@@ -18,14 +19,14 @@
       clues: 30
     },
     {
-      id: 'medium', 
+      id: 'medium',
       title: 'MEDIUM',
       description: 'Balanced',
       clues: 38
     },
     {
       id: 'hard',
-      title: 'HARD', 
+      title: 'HARD',
       description: 'Challenging',
       clues: 47
     },
@@ -41,10 +42,14 @@
    * Starts a new game with the specified difficulty level
    * @param {DifficultyLevel} difficulty - The selected difficulty configuration
    */
-  const startGameWithDifficulty = (difficulty) => {
+  const startGameWithDifficulty = difficulty => {
     console.log('Starting game with difficulty:', difficulty);
-    alert(`Starting ${difficulty.title} game!`);
-    // TODO: Navigate to game page with selected difficulty
+
+    // Create a new game session
+    const session = createGameSession(difficulty.id);
+
+    // Navigate to the game page with the session ID
+    goto(`/game/${session.id}`);
   };
 
   /**
@@ -66,14 +71,17 @@
       <h1 class="app-title" style="font-size: var(--font-size-2xl); margin-bottom: var(--space-2);">
         Choose Difficulty
       </h1>
-      <p class="text-center" style="color: var(--color-neutral-600); font-size: var(--font-size-base);">
+      <p
+        class="text-center"
+        style="color: var(--color-neutral-600); font-size: var(--font-size-base);"
+      >
         Select your challenge level
       </p>
     </div>
 
     <div style="display: grid; gap: var(--space-4); max-width: 20rem; margin: 0 auto; width: 100%;">
       {#each difficulties as difficulty}
-        <button 
+        <button
           class="difficulty-card"
           onclick={() => startGameWithDifficulty(difficulty)}
           type="button"
