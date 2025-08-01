@@ -5,7 +5,7 @@
    * @typedef {Object} DifficultyLevel
    * @property {string} id - Unique identifier for the difficulty level
    * @property {string} title - Display name for the difficulty level
-   * @property {string} description - Description showing clue range
+   * @property {string} description - User-friendly description of difficulty level
    * @property {number} clues - Number of pre-filled clues for this difficulty
    */
 
@@ -14,25 +14,25 @@
     {
       id: 'easy',
       title: 'EASY',
-      description: '25-30 clues',
+      description: 'For beginners',
       clues: 30
     },
     {
       id: 'medium', 
       title: 'MEDIUM',
-      description: '35-40 clues',
+      description: 'Balanced',
       clues: 38
     },
     {
       id: 'hard',
       title: 'HARD', 
-      description: '45-50 clues',
+      description: 'Challenging',
       clues: 47
     },
     {
       id: 'expert',
       title: 'EXPERT',
-      description: '55-60 clues',
+      description: 'Advanced',
       clues: 57
     }
   ];
@@ -43,7 +43,7 @@
    */
   const startGameWithDifficulty = (difficulty) => {
     console.log('Starting game with difficulty:', difficulty);
-    alert(`Starting ${difficulty.title} game with ${difficulty.clues} clues!`);
+    alert(`Starting ${difficulty.title} game!`);
     // TODO: Navigate to game page with selected difficulty
   };
 
