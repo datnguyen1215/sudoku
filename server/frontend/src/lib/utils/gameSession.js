@@ -1,6 +1,10 @@
 /**
  * Game session management utilities
  */
+import { api } from '$lib/api/client.js';
+import { createLogger } from '$lib/utils/logger.js';
+
+const logger = createLogger('gameSession.js');
 
 /**
  * Generates a unique session ID for a new game
@@ -15,9 +19,42 @@ export function generateSessionId() {
 /**
  * Creates a new game session with the specified difficulty
  * @param {string} difficulty - The difficulty level (easy, medium, hard, expert)
+ * @returns {Promise<Object>} Game session data
+ */
+export async function createGameSession(difficulty) {
+  try {
+    // Call backend API to create game
+    const gameData = await api.createGame(difficulty);
+    
+    const session = {
+      id: gameData.sessionId,
+      difficulty: gameData.difficulty,
+      startTime: new Date(gameData.startTime).getTime(),
+      grid: gameData.puzzle.map(row => [...row]), // Player's current grid state
+      originalGrid: gameData.puzzle.map(row => [...row]), // Original clues (read-only)
+      isPaused: false,
+      isNotesMode: false,
+      selectedCell: null,
+      timeElapsed: 0
+    };
+
+    // Also store in localStorage for offline support
+    localStorage.setItem(`sudoku_session_${session.id}`, JSON.stringify(session));
+
+    return session;
+  } catch (error) {
+    console.error('Failed to create game session:', error);
+    // Fallback to local generation if API fails
+    return createLocalGameSession(difficulty);
+  }
+}
+
+/**
+ * Creates a local game session (fallback when API is unavailable)
+ * @param {string} difficulty - The difficulty level
  * @returns {Object} Game session data
  */
-export function createGameSession(difficulty) {
+function createLocalGameSession(difficulty) {
   const sessionId = generateSessionId();
   const { puzzleGrid, solutionGrid } = generateSudokuPuzzle(difficulty);
 
@@ -25,33 +62,56 @@ export function createGameSession(difficulty) {
     id: sessionId,
     difficulty,
     startTime: Date.now(),
-    grid: puzzleGrid.map(row => [...row]), // Player's current grid state
-    originalGrid: puzzleGrid.map(row => [...row]), // Original clues (read-only)
-    solutionGrid: solutionGrid, // Complete solution for validation
+    grid: puzzleGrid.map(row => [...row]),
+    originalGrid: puzzleGrid.map(row => [...row]),
+    solutionGrid: solutionGrid,
     isPaused: false,
     isNotesMode: false,
     selectedCell: null,
-    timeElapsed: 0
+    timeElapsed: 0,
+    isOffline: true // Mark as offline session
   };
 
-  // Store in localStorage as placeholder until backend is ready
   localStorage.setItem(`sudoku_session_${sessionId}`, JSON.stringify(session));
-
   return session;
 }
 
 /**
  * Loads a game session from storage
  * @param {string} sessionId - The session ID to load
- * @returns {Object|null} Game session data or null if not found
+ * @returns {Promise<Object|null>} Game session data or null if not found
  */
-export function loadGameSession(sessionId) {
+export async function loadGameSession(sessionId) {
   try {
-    const stored = localStorage.getItem(`sudoku_session_${sessionId}`);
-    return stored ? JSON.parse(stored) : null;
+    // Try to load from backend first
+    const gameData = await api.getGame(sessionId);
+    
+    const session = {
+      id: gameData.sessionId,
+      difficulty: gameData.difficulty,
+      startTime: new Date(gameData.startTime).getTime(),
+      grid: gameData.currentGrid.map(row => [...row]),
+      originalGrid: gameData.puzzle.map(row => [...row]),
+      isPaused: false,
+      isNotesMode: false,
+      selectedCell: null,
+      timeElapsed: gameData.timeElapsed || 0
+    };
+
+    // Update localStorage
+    localStorage.setItem(`sudoku_session_${sessionId}`, JSON.stringify(session));
+    
+    return session;
   } catch (error) {
-    console.error('Failed to load game session:', error);
-    return null;
+    console.log('Failed to load from API, trying localStorage:', error.message);
+    // Fallback to localStorage
+    try {
+      const stored = localStorage.getItem(`sudoku_session_${sessionId}`);
+      return stored ? JSON.parse(stored) : null;
+    } catch (localError) {
+      logger.error('Failed to load game session from localStorage', { error: localError.message });
+      return null;
+    }
   }
 }
 
@@ -59,11 +119,22 @@ export function loadGameSession(sessionId) {
  * Saves a game session to storage
  * @param {Object} session - The session data to save
  */
-export function saveGameSession(session) {
+export async function saveGameSession(session) {
   try {
+    // Save to localStorage immediately
     localStorage.setItem(`sudoku_session_${session.id}`, JSON.stringify(session));
+    
+    // If not an offline session, also save to backend
+    if (!session.isOffline) {
+      try {
+        await api.updateGame(session.id, session.grid, session.timeElapsed);
+        logger.debug('Game saved to backend', { sessionId: session.id });
+      } catch (apiError) {
+        logger.warn('Failed to save to backend, but localStorage save succeeded', { error: apiError.message });
+      }
+    }
   } catch (error) {
-    console.error('Failed to save game session:', error);
+    logger.error('Failed to save game session', { error: error.message });
   }
 }
 

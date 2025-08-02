@@ -23,17 +23,22 @@
   /**
    * Initialize the game session on component mount
    */
-  onMount(() => {
-    gameSession = loadGameSession(sessionId);
+  onMount(async () => {
+    try {
+      gameSession = await loadGameSession(sessionId);
 
-    if (!gameSession) {
-      // Invalid session, redirect to difficulty selection
-      console.warn('Invalid session ID:', sessionId);
+      if (!gameSession) {
+        // Invalid session, redirect to difficulty selection
+        console.warn('Invalid session ID:', sessionId);
+        goto('/difficulty');
+        return;
+      }
+
+      startTimer();
+    } catch (error) {
+      console.error('Failed to load game session:', error);
       goto('/difficulty');
-      return;
     }
-
-    startTimer();
 
     // Cleanup timer on component unmount
     return () => {
@@ -53,6 +58,7 @@
       if (gameSession && !gameSession.isPaused) {
         currentTime = Date.now() - gameSession.startTime;
         gameSession.timeElapsed = currentTime;
+        // Don't await to avoid blocking the timer
         saveGameSession(gameSession);
       }
     }, 1000);
@@ -77,6 +83,7 @@
       startTimer();
     }
 
+    // Don't await to keep UI responsive
     saveGameSession(gameSession);
   }
 
@@ -117,6 +124,7 @@
     }
 
     gameSession.grid[row][col] = number;
+    // Don't await to keep UI responsive
     saveGameSession(gameSession);
   }
 
@@ -127,6 +135,7 @@
     if (!gameSession) return;
 
     gameSession.isNotesMode = !gameSession.isNotesMode;
+    // Don't await to keep UI responsive
     saveGameSession(gameSession);
   }
 
@@ -144,6 +153,7 @@
     }
 
     gameSession.grid[row][col] = null;
+    // Don't await to keep UI responsive
     saveGameSession(gameSession);
   }
 

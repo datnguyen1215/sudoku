@@ -1,6 +1,9 @@
 <script>
   import { goto } from '$app/navigation';
   import { createGameSession } from '$utils/gameSession.js';
+  import { createLogger } from '$utils/logger.js';
+  
+  const logger = createLogger('difficulty/+page.svelte');
 
   /**
    * @typedef {Object} DifficultyLevel
@@ -42,20 +45,26 @@
    * Starts a new game with the specified difficulty level
    * @param {DifficultyLevel} difficulty - The selected difficulty configuration
    */
-  const startGameWithDifficulty = difficulty => {
-    console.log('Starting game with difficulty:', difficulty);
+  const startGameWithDifficulty = async difficulty => {
+    logger.info('Starting new game', { difficulty: difficulty.id });
 
-    // Create a new game session
-    const session = createGameSession(difficulty.id);
+    try {
+      // Create a new game session
+      const session = await createGameSession(difficulty.id);
 
-    // Navigate to the game page with the session ID
-    goto(`/game/${session.id}`);
+      // Navigate to the game page with the session ID
+      goto(`/game/${session.id}`);
+    } catch (error) {
+      logger.error('Failed to start game', { error: error.message });
+      alert('Failed to start game. Please try again.');
+    }
   };
 
   /**
    * Navigates back to the welcome page
    */
   const goBack = () => {
+    logger.debug('Navigating back to home');
     goto('/');
   };
 </script>

@@ -9,7 +9,8 @@ const config = {
     alias: {
       $components: 'src/lib/components',
       $utils: 'src/lib/utils',
-      $types: 'src/lib/types'
+      $types: 'src/lib/types',
+      $shared: '../../shared'
     }
   }
 };
