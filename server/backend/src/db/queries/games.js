@@ -42,7 +42,7 @@ export const getGame = async sessionId => {
  */
 export const updateGame = async (sessionId, currentGrid, timeElapsed) => {
   const queryText = `
-    UPDATE games 
+    UPDATE games
     SET current_grid = $2::jsonb, time_elapsed = $3, updated_at = CURRENT_TIMESTAMP
     WHERE session_id = $1
     RETURNING *
