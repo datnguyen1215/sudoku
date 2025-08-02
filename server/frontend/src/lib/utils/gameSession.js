@@ -26,7 +26,8 @@ export async function createGameSession(difficulty) {
       isNotesMode: false,
       selectedCell: null,
       timeElapsed: 0,
-      incorrectCells: {} // Track incorrect cells as "row,col" keys
+      incorrectCells: {}, // Track incorrect cells as "row,col" keys
+      notes: {} // Track notes for each cell as "row,col": Set([1, 2, 5])
     };
 
     // Find the matching solution for backend games
@@ -35,8 +36,16 @@ export async function createGameSession(difficulty) {
       session.solutionGrid = matchingSolution;
     }
 
+    // Convert notes Sets to arrays for JSON serialization
+    const sessionToStore = {
+      ...session,
+      notes: Object.fromEntries(
+        Object.entries(session.notes).map(([key, value]) => [key, Array.from(value || [])])
+      )
+    };
+
     // Also store in localStorage for offline support
-    localStorage.setItem(`sudoku_session_${session.id}`, JSON.stringify(session));
+    localStorage.setItem(`sudoku_session_${session.id}`, JSON.stringify(sessionToStore));
 
     return session;
   } catch (error) {
@@ -46,34 +55,6 @@ export async function createGameSession(difficulty) {
   }
 }
 
-/**
- * Creates a local game session (fallback when API is unavailable)
- * @param {string} difficulty - The difficulty level
- * @returns {Object} Game session data
- */
-function createLocalGameSession(difficulty) {
-  // Generate temporary local session ID with timestamp to ensure uniqueness
-  const sessionId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  const { puzzleGrid, solutionGrid } = generateSudokuPuzzle(difficulty);
-
-  const session = {
-    id: sessionId,
-    difficulty,
-    startTime: Date.now(),
-    grid: puzzleGrid.map(row => [...row]),
-    originalGrid: puzzleGrid.map(row => [...row]),
-    solutionGrid: solutionGrid,
-    isPaused: false,
-    isNotesMode: false,
-    selectedCell: null,
-    timeElapsed: 0,
-    isOffline: true, // Mark as offline session
-    incorrectCells: {} // Track incorrect cells as "row,col" keys
-  };
-
-  localStorage.setItem(`sudoku_session_${sessionId}`, JSON.stringify(session));
-  return session;
-}
 
 /**
  * Loads a game session from storage
@@ -95,7 +76,8 @@ export async function loadGameSession(sessionId) {
       isNotesMode: false,
       selectedCell: null,
       timeElapsed: gameData.timeElapsed || 0,
-      incorrectCells: {} // Track incorrect cells as "row,col" keys
+      incorrectCells: {}, // Track incorrect cells as "row,col" keys
+      notes: {} // Track notes for each cell as "row,col": Set([1, 2, 5])
     };
 
     // Find the matching solution for backend games
@@ -104,8 +86,16 @@ export async function loadGameSession(sessionId) {
       session.solutionGrid = matchingSolution;
     }
 
+    // Convert notes Sets to arrays for JSON serialization
+    const sessionToStore = {
+      ...session,
+      notes: Object.fromEntries(
+        Object.entries(session.notes).map(([key, value]) => [key, Array.from(value || [])])
+      )
+    };
+
     // Update localStorage
-    localStorage.setItem(`sudoku_session_${sessionId}`, JSON.stringify(session));
+    localStorage.setItem(`sudoku_session_${sessionId}`, JSON.stringify(sessionToStore));
 
     return session;
   } catch (error) {
@@ -113,7 +103,16 @@ export async function loadGameSession(sessionId) {
     // Fallback to localStorage
     try {
       const stored = localStorage.getItem(`sudoku_session_${sessionId}`);
-      return stored ? JSON.parse(stored) : null;
+      if (!stored) return null;
+
+      const parsed = JSON.parse(stored);
+      // Convert notes arrays back to Sets
+      if (parsed.notes) {
+        parsed.notes = Object.fromEntries(
+          Object.entries(parsed.notes).map(([key, value]) => [key, new Set(value || [])])
+        );
+      }
+      return parsed;
     } catch (localError) {
       logger.error('Failed to load game session from localStorage', { error: localError.message });
       return null;
@@ -121,24 +120,75 @@ export async function loadGameSession(sessionId) {
   }
 }
 
+// Debounced backend save to reduce API calls
+let backendSaveTimeout = null;
+const BACKEND_SAVE_DELAY = 2000; // 2 seconds
+
 /**
- * Saves a game session to storage
+ * Saves a game session to localStorage only (for frequent timer updates)
  * @param {Object} session - The session data to save
  */
-export async function saveGameSession(session) {
+export function saveGameSessionLocally(session) {
   try {
+    // Convert notes Sets to arrays for JSON serialization
+    const sessionToStore = {
+      ...session,
+      notes: session.notes ? Object.fromEntries(
+        Object.entries(session.notes).map(([key, value]) => [key, Array.from(value || [])])
+      ) : {}
+    };
+
     // Save to localStorage immediately
-    localStorage.setItem(`sudoku_session_${session.id}`, JSON.stringify(session));
+    localStorage.setItem(`sudoku_session_${session.id}`, JSON.stringify(sessionToStore));
+  } catch (error) {
+    logger.error('Failed to save game session locally', { error: error.message });
+  }
+}
+
+/**
+ * Saves a game session to both localStorage and backend (debounced)
+ * @param {Object} session - The session data to save
+ * @param {boolean} immediate - Whether to save immediately or use debouncing
+ */
+export async function saveGameSession(session, immediate = false) {
+  try {
+    // Always save to localStorage immediately
+    saveGameSessionLocally(session);
 
     // If not an offline session, also save to backend
     if (!session.isOffline) {
-      try {
-        await api.updateGame(session.id, session.grid, session.timeElapsed);
-        logger.debug('Game saved to backend', { sessionId: session.id });
-      } catch (apiError) {
-        logger.warn('Failed to save to backend, but localStorage save succeeded', {
-          error: apiError.message
-        });
+      if (immediate) {
+        // Clear any pending debounced save
+        if (backendSaveTimeout) {
+          clearTimeout(backendSaveTimeout);
+          backendSaveTimeout = null;
+        }
+
+        try {
+          await api.updateGame(session.id, session.grid, session.timeElapsed);
+          logger.debug('Game saved to backend immediately', { sessionId: session.id });
+        } catch (apiError) {
+          logger.warn('Failed to save to backend immediately, but localStorage save succeeded', {
+            error: apiError.message
+          });
+        }
+      } else {
+        // Debounced backend save
+        if (backendSaveTimeout) {
+          clearTimeout(backendSaveTimeout);
+        }
+
+        backendSaveTimeout = setTimeout(async () => {
+          try {
+            await api.updateGame(session.id, session.grid, session.timeElapsed);
+            logger.debug('Game saved to backend (debounced)', { sessionId: session.id });
+          } catch (apiError) {
+            logger.warn('Failed to save to backend (debounced), but localStorage save succeeded', {
+              error: apiError.message
+            });
+          }
+          backendSaveTimeout = null;
+        }, BACKEND_SAVE_DELAY);
       }
     }
   } catch (error) {
@@ -146,15 +196,6 @@ export async function saveGameSession(session) {
   }
 }
 
-/**
- * Generates an empty 9x9 sudoku grid
- * @returns {Array<Array<null>>} Empty grid
- */
-function generateEmptyGrid() {
-  return Array(9)
-    .fill()
-    .map(() => Array(9).fill(null));
-}
 
 /**
  * Pre-made valid sudoku solutions
@@ -223,63 +264,85 @@ function findMatchingSolution(puzzleGrid) {
   return null; // No matching solution found
 }
 
-/**
- * Gets difficulty-based clue count mapping
- * @param {string} difficulty - The difficulty level
- * @returns {number} Number of clues to leave in the puzzle
- */
-function getClueCount(difficulty) {
-  const clueMap = {
-    easy: 45, // More clues = easier
-    medium: 35, // Medium clues
-    hard: 28, // Fewer clues = harder
-    expert: 22 // Very few clues = expert
-  };
-  return clueMap[difficulty] || 35;
-}
 
 /**
- * Generates a sudoku puzzle with the specified difficulty
- * @param {string} difficulty - The difficulty level (easy, medium, hard, expert)
- * @returns {Object} Object containing puzzleGrid and solutionGrid
+ * Gets all filled numbers in a specific row
+ * @param {Array<Array<number|null>>} grid - The sudoku grid
+ * @param {number} row - Row index
+ * @returns {Set<number>} Set of filled numbers in the row
  */
-export function generateSudokuPuzzle(difficulty) {
-  // Select a random complete solution
-  const solutionGrid = SUDOKU_SOLUTIONS[Math.floor(Math.random() * SUDOKU_SOLUTIONS.length)].map(
-    row => [...row]
-  ); // Deep copy
-
-  // Create puzzle grid by removing numbers
-  const puzzleGrid = solutionGrid.map(row => [...row]); // Deep copy
-  const clueCount = getClueCount(difficulty);
-  const totalCells = 81;
-  const cellsToRemove = totalCells - clueCount;
-
-  // Create array of all cell positions
-  const allPositions = [];
-  for (let row = 0; row < 9; row++) {
-    for (let col = 0; col < 9; col++) {
-      allPositions.push({ row, col });
+export function getFilledNumbersInRow(grid, row) {
+  const filled = new Set();
+  for (let col = 0; col < 9; col++) {
+    if (grid[row][col] !== null) {
+      filled.add(grid[row][col]);
     }
   }
-
-  // Shuffle positions and remove numbers
-  for (let i = allPositions.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [allPositions[i], allPositions[j]] = [allPositions[j], allPositions[i]];
-  }
-
-  // Remove numbers from random positions
-  for (let i = 0; i < cellsToRemove && i < allPositions.length; i++) {
-    const { row, col } = allPositions[i];
-    puzzleGrid[row][col] = null;
-  }
-
-  return {
-    puzzleGrid,
-    solutionGrid
-  };
+  return filled;
 }
+
+/**
+ * Gets all filled numbers in a specific column
+ * @param {Array<Array<number|null>>} grid - The sudoku grid
+ * @param {number} col - Column index
+ * @returns {Set<number>} Set of filled numbers in the column
+ */
+/**
+ * Forces immediate backend save (for cleanup/critical saves)
+ * @param {Object} session - The session data to save
+ */
+export async function forceBackendSave(session) {
+  if (!session || session.isOffline) return;
+
+  // Clear any pending debounced save
+  if (backendSaveTimeout) {
+    clearTimeout(backendSaveTimeout);
+    backendSaveTimeout = null;
+  }
+
+  try {
+    await api.updateGame(session.id, session.grid, session.timeElapsed);
+    logger.debug('Game force saved to backend', { sessionId: session.id });
+  } catch (apiError) {
+    logger.error('Failed to force save to backend', {
+      error: apiError.message,
+      sessionId: session.id
+    });
+  }
+}
+
+export function getFilledNumbersInColumn(grid, col) {
+  const filled = new Set();
+  for (let row = 0; row < 9; row++) {
+    if (grid[row][col] !== null) {
+      filled.add(grid[row][col]);
+    }
+  }
+  return filled;
+}
+
+/**
+ * Gets all filled numbers in a specific 3x3 box
+ * @param {Array<Array<number|null>>} grid - The sudoku grid
+ * @param {number} row - Row index
+ * @param {number} col - Column index
+ * @returns {Set<number>} Set of filled numbers in the box
+ */
+export function getFilledNumbersInBox(grid, row, col) {
+  const filled = new Set();
+  const boxRow = Math.floor(row / 3) * 3;
+  const boxCol = Math.floor(col / 3) * 3;
+
+  for (let r = boxRow; r < boxRow + 3; r++) {
+    for (let c = boxCol; c < boxCol + 3; c++) {
+      if (grid[r][c] !== null) {
+        filled.add(grid[r][c]);
+      }
+    }
+  }
+  return filled;
+}
+
 
 /**
  * Formats elapsed time in MM:SS format

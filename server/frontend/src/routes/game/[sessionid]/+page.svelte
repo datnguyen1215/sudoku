@@ -1,15 +1,15 @@
 <script>
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { loadGameSession, saveGameSession, formatTime } from '$utils/gameSession.js';
+  import { loadGameSession, saveGameSession, saveGameSessionLocally, forceBackendSave, formatTime, getFilledNumbersInRow, getFilledNumbersInColumn, getFilledNumbersInBox } from '$utils/gameSession.js';
   import GameHeader from '$components/game/GameHeader.svelte';
   import SudokuGrid from '$components/game/SudokuGrid.svelte';
   import NumberPad from '$components/game/NumberPad.svelte';
   import ActionButtons from '$components/game/ActionButtons.svelte';
 
   /** @type {string} */
-  const sessionId = $page.params.sessionid;
+  const sessionId = page.params.sessionid;
 
   /** @type {Object|null} */
   let gameSession = $state(null);
@@ -19,6 +19,12 @@
 
   /** @type {NodeJS.Timeout|null} */
   let timerInterval = null;
+
+  /** @type {Object} */
+  let flashingCells = $state({});
+
+  /** @type {NodeJS.Timeout|null} */
+  let flashTimeout = null;
 
   /**
    * Initialize the game session on component mount
@@ -40,10 +46,13 @@
       goto('/difficulty');
     }
 
-    // Cleanup timer on component unmount
+    // Cleanup timer on component unmount and force save
     return () => {
       if (timerInterval) {
         clearInterval(timerInterval);
+      }
+      if (gameSession) {
+        forceBackendSave(gameSession);
       }
     };
   });
@@ -58,8 +67,8 @@
       if (gameSession && !gameSession.isPaused) {
         currentTime = Date.now() - gameSession.startTime;
         gameSession.timeElapsed = currentTime;
-        // Don't await to avoid blocking the timer
-        saveGameSession(gameSession);
+        // Only save to localStorage for timer updates
+        saveGameSessionLocally(gameSession);
       }
     }, 1000);
   }
@@ -83,7 +92,7 @@
       startTimer();
     }
 
-    // Don't await to keep UI responsive
+    // Use debounced save for pause/resume
     saveGameSession(gameSession);
   }
 
@@ -93,6 +102,10 @@
   function goBack() {
     if (timerInterval) {
       clearInterval(timerInterval);
+    }
+    // Force save before navigation
+    if (gameSession) {
+      forceBackendSave(gameSession);
     }
     goto('/difficulty');
   }
@@ -105,7 +118,8 @@
     if (!gameSession) return;
 
     gameSession.selectedCell = event.detail;
-    saveGameSession(gameSession);
+    // Cell selection doesn't need backend sync, just localStorage
+    saveGameSessionLocally(gameSession);
   }
 
   /**
@@ -123,20 +137,68 @@
       return;
     }
 
-    gameSession.grid[row][col] = number;
-
-    // Validate the entry if we have a solution
     const cellKey = `${row},${col}`;
-    if (gameSession.solutionGrid) {
-      // Local game - we have the solution
-      if (number !== null && number !== gameSession.solutionGrid[row][col]) {
-        gameSession.incorrectCells[cellKey] = true;
+
+    // Check for conflicts and flash conflicting cells
+    const conflictingCells = findConflictingCells(row, col, number);
+    if (conflictingCells.length > 0) {
+      flashConflictingCells(conflictingCells);
+    }
+
+    if (gameSession.isNotesMode) {
+      // In notes mode, toggle the number in the notes set
+      const currentNotes = gameSession.notes[cellKey] ? new Set(gameSession.notes[cellKey]) : new Set();
+
+      if (currentNotes.has(number)) {
+        // If note already exists, remove it (no conflict check needed for removal)
+        currentNotes.delete(number);
       } else {
-        delete gameSession.incorrectCells[cellKey];
+        // Adding a new note - check for conflicts first
+        const conflictingCells = findConflictingCells(row, col, number);
+        if (conflictingCells.length > 0) {
+          // Flash conflicting cells to show why note can't be added
+          flashConflictingCells(conflictingCells);
+          // Don't add the conflicting note - return early
+          return;
+        }
+        // No conflicts, safe to add the note
+        currentNotes.add(number);
+      }
+
+      // Create new notes object to trigger reactivity
+      if (currentNotes.size === 0) {
+        const newNotes = { ...gameSession.notes };
+        delete newNotes[cellKey];
+        gameSession.notes = newNotes;
+      } else {
+        gameSession.notes = {
+          ...gameSession.notes,
+          [cellKey]: currentNotes
+        };
+      }
+    } else {
+      // Regular mode - set the number
+      gameSession.grid[row][col] = number;
+
+      // Clear notes for this cell when entering a real number
+      if (number !== null && gameSession.notes[cellKey]) {
+        const newNotes = { ...gameSession.notes };
+        delete newNotes[cellKey];
+        gameSession.notes = newNotes;
+      }
+
+      // Validate the entry if we have a solution
+      if (gameSession.solutionGrid) {
+        // Local game - we have the solution
+        if (number !== null && number !== gameSession.solutionGrid[row][col]) {
+          gameSession.incorrectCells[cellKey] = true;
+        } else {
+          delete gameSession.incorrectCells[cellKey];
+        }
       }
     }
 
-    // Don't await to keep UI responsive
+    // User made a move, debounce backend save
     saveGameSession(gameSession);
   }
 
@@ -147,8 +209,8 @@
     if (!gameSession) return;
 
     gameSession.isNotesMode = !gameSession.isNotesMode;
-    // Don't await to keep UI responsive
-    saveGameSession(gameSession);
+    // Notes mode toggle doesn't need backend sync
+    saveGameSessionLocally(gameSession);
   }
 
   /**
@@ -164,13 +226,22 @@
       return;
     }
 
+    const cellKey = `${row},${col}`;
+
+    // Erase the value
     gameSession.grid[row][col] = null;
 
     // Remove from incorrect cells when erasing
-    const cellKey = `${row},${col}`;
     delete gameSession.incorrectCells[cellKey];
 
-    // Don't await to keep UI responsive
+    // Also clear notes for this cell
+    if (gameSession.notes[cellKey]) {
+      const newNotes = { ...gameSession.notes };
+      delete newNotes[cellKey];
+      gameSession.notes = newNotes;
+    }
+
+    // User erased a cell, debounce backend save
     saveGameSession(gameSession);
   }
 
@@ -180,6 +251,73 @@
   function showHint() {
     alert('Hint feature coming soon!');
   }
+
+  /**
+   * Finds all cells that would conflict with placing a number in the selected cell
+   * @param {number} row - Row index of the selected cell
+   * @param {number} col - Column index of the selected cell
+   * @param {number} number - The number to check conflicts for
+   * @returns {Array<string>} Array of cell keys that contain conflicting numbers
+   */
+  function findConflictingCells(row, col, number) {
+    if (!gameSession || !gameSession.grid) return [];
+
+    const conflictingCells = [];
+    const grid = gameSession.grid;
+
+    // Check row for conflicts
+    for (let c = 0; c < 9; c++) {
+      if (c !== col && grid[row][c] === number) {
+        conflictingCells.push(`${row},${c}`);
+      }
+    }
+
+    // Check column for conflicts
+    for (let r = 0; r < 9; r++) {
+      if (r !== row && grid[r][col] === number) {
+        conflictingCells.push(`${r},${col}`);
+      }
+    }
+
+    // Check 3x3 box for conflicts
+    const boxRow = Math.floor(row / 3) * 3;
+    const boxCol = Math.floor(col / 3) * 3;
+    for (let r = boxRow; r < boxRow + 3; r++) {
+      for (let c = boxCol; c < boxCol + 3; c++) {
+        if ((r !== row || c !== col) && grid[r][c] === number) {
+          conflictingCells.push(`${r},${c}`);
+        }
+      }
+    }
+
+    return conflictingCells;
+  }
+
+  /**
+   * Triggers flashing animation for conflicting cells
+   * @param {Array<string>} cellKeys - Array of cell keys to flash
+   */
+  function flashConflictingCells(cellKeys) {
+    if (cellKeys.length === 0) return;
+
+    // Clear any existing flash timeout
+    if (flashTimeout) {
+      clearTimeout(flashTimeout);
+    }
+
+    // Set flashing cells
+    const newFlashingCells = {};
+    cellKeys.forEach(key => {
+      newFlashingCells[key] = true;
+    });
+    flashingCells = newFlashingCells;
+
+    // Clear flashing after animation duration
+    flashTimeout = setTimeout(() => {
+      flashingCells = {};
+    }, 500);
+  }
+
 </script>
 
 {#if gameSession}
@@ -200,6 +338,8 @@
           originalGrid={gameSession.originalGrid}
           selectedCell={gameSession.selectedCell}
           incorrectCells={gameSession.incorrectCells}
+          notes={gameSession.notes}
+          flashingCells={flashingCells}
           onCellSelected={handleCellSelected}
         />
 
@@ -210,7 +350,10 @@
           disabled={!gameSession.selectedCell}
         />
 
-        <NumberPad onNumberSelected={handleNumberInput} disabled={!gameSession.selectedCell} />
+        <NumberPad
+          onNumberSelected={handleNumberInput}
+          disabled={!gameSession.selectedCell}
+        />
       </div>
     </div>
   </div>

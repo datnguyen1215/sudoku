@@ -1,6 +1,6 @@
 <script>
-  /** @type {{ grid: Array<Array<number|null>>, originalGrid: Array<Array<number|null>>, selectedCell: Object|null, incorrectCells: Object, onCellSelected: (event: CustomEvent) => void }} */
-  let { grid, originalGrid, selectedCell, incorrectCells = {}, onCellSelected } = $props();
+  /** @type {{ grid: Array<Array<number|null>>, originalGrid: Array<Array<number|null>>, selectedCell: Object|null, incorrectCells: Object, notes: Object, flashingCells: Object, onCellSelected: (event: CustomEvent) => void }} */
+  let { grid, originalGrid, selectedCell, incorrectCells = {}, notes = {}, flashingCells = {}, onCellSelected } = $props();
 
   /**
    * Checks if a cell is currently selected
@@ -70,6 +70,30 @@
   }
 
   /**
+   * Checks if a cell is currently flashing
+   * @param {number} row - Row index
+   * @param {number} col - Column index
+   * @returns {boolean}
+   */
+  function isFlashingCell(row, col) {
+    const cellKey = `${row},${col}`;
+    return flashingCells[cellKey] === true;
+  }
+
+
+  /**
+   * Gets the notes for a cell as an array
+   * @param {number} row - Row index
+   * @param {number} col - Column index
+   * @returns {Array<number>}
+   */
+  function getCellNotes(row, col) {
+    const cellKey = `${row},${col}`;
+    const cellNotes = notes[cellKey];
+    return cellNotes ? Array.from(cellNotes).sort() : [];
+  }
+
+  /**
    * Handles cell click for all cells (including clue cells)
    * @param {number} row - Row index
    * @param {number} col - Column index
@@ -93,12 +117,20 @@
         class:incorrect={isIncorrectCell(rowIndex, colIndex)}
         class:related={isRelatedCell(rowIndex, colIndex)}
         class:same-value={hasSameValue(rowIndex, colIndex)}
+        class:has-notes={cell === null && getCellNotes(rowIndex, colIndex).length > 0}
+        class:flashing={isFlashingCell(rowIndex, colIndex)}
         class:right-border={colIndex === 2 || colIndex === 5}
         class:bottom-border={rowIndex === 2 || rowIndex === 5}
         onclick={() => handleCellClick(rowIndex, colIndex)}
         type="button"
       >
-        {cell || ''}
+        {#if cell !== null}
+          {cell}
+        {:else}
+          {#each getCellNotes(rowIndex, colIndex) as note}
+            <span class="note note-{note}">{note}</span>
+          {/each}
+        {/if}
       </button>
     {/each}
   {/each}
@@ -234,19 +266,55 @@
     }
   }
 
-  /* Completion animation */
-  @keyframes pulse-success {
-    0% {
-      background-color: var(--sudoku-cell-bg);
-      transform: scale(1);
-    }
-    50% {
-      background-color: var(--color-primary-300);
-      transform: scale(1.05);
-    }
-    100% {
-      background-color: var(--sudoku-cell-bg);
-      transform: scale(1);
-    }
+  /* Notes display */
+  .sudoku-cell.has-notes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 2px;
+    font-size: clamp(0.4rem, 1vw, 0.625rem);
+    font-weight: normal;
   }
+
+  .note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--color-neutral-600);
+    line-height: 1;
+  }
+
+  /* Position each note in its grid position */
+  .note-1 { grid-area: 1 / 1; }
+  .note-2 { grid-area: 1 / 2; }
+  .note-3 { grid-area: 1 / 3; }
+  .note-4 { grid-area: 2 / 1; }
+  .note-5 { grid-area: 2 / 2; }
+  .note-6 { grid-area: 2 / 3; }
+  .note-7 { grid-area: 3 / 1; }
+  .note-8 { grid-area: 3 / 2; }
+  .note-9 { grid-area: 3 / 3; }
+
+  /* Flashing animation for conflicting cells */
+  .sudoku-cell.flashing {
+    animation: flash 0.5s ease-in-out;
+  }
+
+  @keyframes flash {
+    0% { background-color: var(--sudoku-cell-bg); }
+    50% { background-color: var(--color-error-100); }
+    100% { background-color: var(--sudoku-cell-bg); }
+  }
+
+  /* Override other background colors when flashing */
+  .sudoku-cell.flashing.filled,
+  .sudoku-cell.flashing.clue,
+  .sudoku-cell.flashing.related,
+  .sudoku-cell.flashing.same-value {
+    animation: flash 0.5s ease-in-out;
+  }
+
+
 </style>
