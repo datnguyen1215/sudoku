@@ -49,16 +49,6 @@
   }
 
   /**
-   * Gets the section index for a cell (0-8)
-   * @param {number} row - Row index
-   * @param {number} col - Column index
-   * @returns {number}
-   */
-  function getSectionIndex(row, col) {
-    return Math.floor(row / 3) * 3 + Math.floor(col / 3);
-  }
-
-  /**
    * Checks if a cell is an original clue (read-only)
    * @param {number} row - Row index
    * @param {number} col - Column index
@@ -258,9 +248,5 @@
       background-color: var(--sudoku-cell-bg);
       transform: scale(1);
     }
-  }
-
-  .sudoku-cell.completed {
-    animation: pulse-success 0.5s ease;
   }
 </style>
