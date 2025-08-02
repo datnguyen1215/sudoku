@@ -1,5 +1,10 @@
 import * as gameQueries from '#db/queries/games.js';
 import { v4 as uuidv4 } from 'uuid';
+import { createLogger } from '#utils/logger.js';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const logger = createLogger(__filename);
 
 // Pre-made valid sudoku solutions (same as frontend)
 const SUDOKU_SOLUTIONS = [
@@ -62,10 +67,16 @@ const generateSessionId = () => uuidv4();
  * @returns {{puzzleGrid: Array<Array<number|null>>, solutionGrid: Array<Array<number>>}}
  */
 const generateSudokuPuzzle = difficulty => {
+  const startTime = Date.now();
+
+  logger.debug('Generating sudoku puzzle', {
+    difficulty,
+    availableSolutions: SUDOKU_SOLUTIONS.length
+  });
+
   // Select a random complete solution
-  const solutionGrid = SUDOKU_SOLUTIONS[Math.floor(Math.random() * SUDOKU_SOLUTIONS.length)].map(
-    row => [...row]
-  );
+  const solutionIndex = Math.floor(Math.random() * SUDOKU_SOLUTIONS.length);
+  const solutionGrid = SUDOKU_SOLUTIONS[solutionIndex].map(row => [...row]);
 
   // Create puzzle grid by removing numbers
   const puzzleGrid = solutionGrid.map(row => [...row]);
@@ -93,6 +104,16 @@ const generateSudokuPuzzle = difficulty => {
     puzzleGrid[row][col] = null;
   }
 
+  const generationTime = Date.now() - startTime;
+
+  logger.debug('Puzzle generated successfully', {
+    difficulty,
+    solutionIndex,
+    clueCount,
+    cellsToRemove,
+    generationTime: `${generationTime}ms`
+  });
+
   return {
     puzzleGrid,
     solutionGrid
@@ -104,23 +125,52 @@ const generateSudokuPuzzle = difficulty => {
  * @returns {Promise<{sessionId: string, difficulty: string, puzzle: Array<Array<number|null>>, startTime: Date}>}
  */
 export const createNewGame = async difficulty => {
+  const startTime = Date.now();
   const sessionId = generateSessionId();
-  const { puzzleGrid, solutionGrid } = generateSudokuPuzzle(difficulty);
 
-  const game = await gameQueries.createGame(
+  logger.info('Starting game creation', {
     sessionId,
-    difficulty,
-    puzzleGrid, // PostgreSQL JSONB handles serialization
-    solutionGrid // PostgreSQL JSONB handles serialization
-  );
+    difficulty
+  });
 
-  // Return without solution for client
-  return {
-    sessionId: game.session_id,
-    difficulty: game.difficulty,
-    puzzle: game.puzzle_grid, // PostgreSQL JSONB returns parsed object
-    startTime: game.created_at
-  };
+  try {
+    const { puzzleGrid, solutionGrid } = generateSudokuPuzzle(difficulty);
+
+    const dbStartTime = Date.now();
+    const game = await gameQueries.createGame(
+      sessionId,
+      difficulty,
+      puzzleGrid, // PostgreSQL JSONB handles serialization
+      solutionGrid // PostgreSQL JSONB handles serialization
+    );
+    const dbTime = Date.now() - dbStartTime;
+
+    const totalTime = Date.now() - startTime;
+
+    logger.info('Game created in database', {
+      sessionId,
+      difficulty,
+      dbTime: `${dbTime}ms`,
+      totalTime: `${totalTime}ms`,
+      puzzleSize: puzzleGrid.length
+    });
+
+    // Return without solution for client
+    return {
+      sessionId: game.session_id,
+      difficulty: game.difficulty,
+      puzzle: game.puzzle_grid, // PostgreSQL JSONB returns parsed object
+      startTime: game.created_at
+    };
+  } catch (error) {
+    logger.error('Failed to create game', {
+      sessionId,
+      difficulty,
+      error: error.message,
+      stack: error.stack
+    });
+    throw error;
+  }
 };
 
 /**
@@ -129,21 +179,54 @@ export const createNewGame = async difficulty => {
  * @throws {Error} When game is not found
  */
 export const getGameById = async sessionId => {
-  const game = await gameQueries.getGame(sessionId);
+  const startTime = Date.now();
 
-  if (!game) {
-    throw new Error('Game not found');
+  logger.debug('Fetching game from database', {
+    sessionId
+  });
+
+  try {
+    const game = await gameQueries.getGame(sessionId);
+    const dbTime = Date.now() - startTime;
+
+    if (!game) {
+      logger.warn('Game not found in database', {
+        sessionId,
+        dbTime: `${dbTime}ms`
+      });
+      throw new Error('Game not found');
+    }
+
+    logger.debug('Game retrieved from database', {
+      sessionId,
+      difficulty: game.difficulty,
+      timeElapsed: game.time_elapsed,
+      dbTime: `${dbTime}ms`,
+      hasCurrentGrid: !!game.current_grid
+    });
+
+    // Return without solution for client
+    return {
+      sessionId: game.session_id,
+      difficulty: game.difficulty,
+      puzzle: game.puzzle_grid, // PostgreSQL JSONB returns parsed object
+      currentGrid: game.current_grid, // PostgreSQL JSONB returns parsed object
+      timeElapsed: game.time_elapsed,
+      startTime: game.created_at
+    };
+  } catch (error) {
+    const dbTime = Date.now() - startTime;
+
+    if (error.message !== 'Game not found') {
+      logger.error('Database error fetching game', {
+        sessionId,
+        error: error.message,
+        dbTime: `${dbTime}ms`,
+        stack: error.stack
+      });
+    }
+    throw error;
   }
-
-  // Return without solution for client
-  return {
-    sessionId: game.session_id,
-    difficulty: game.difficulty,
-    puzzle: game.puzzle_grid, // PostgreSQL JSONB returns parsed object
-    currentGrid: game.current_grid, // PostgreSQL JSONB returns parsed object
-    timeElapsed: game.time_elapsed,
-    startTime: game.created_at
-  };
 };
 
 /**
@@ -154,15 +237,56 @@ export const getGameById = async sessionId => {
  * @throws {Error} When game is not found
  */
 export const updateGameState = async (sessionId, currentGrid, timeElapsed) => {
-  const game = await gameQueries.updateGame(
+  const startTime = Date.now();
+
+  // Calculate grid completion percentage
+  const filledCells = currentGrid.flat().filter(cell => cell !== null).length;
+  const completionPercentage = Math.round((filledCells / 81) * 100);
+
+  logger.info('Updating game state', {
     sessionId,
-    currentGrid, // PostgreSQL JSONB handles serialization
-    timeElapsed
-  );
+    timeElapsed,
+    filledCells,
+    completionPercentage: `${completionPercentage}%`
+  });
 
-  if (!game) {
-    throw new Error('Game not found');
+  try {
+    const game = await gameQueries.updateGame(
+      sessionId,
+      currentGrid, // PostgreSQL JSONB handles serialization
+      timeElapsed
+    );
+
+    const dbTime = Date.now() - startTime;
+
+    if (!game) {
+      logger.warn('Game not found for update', {
+        sessionId,
+        dbTime: `${dbTime}ms`
+      });
+      throw new Error('Game not found');
+    }
+
+    logger.info('Game state updated successfully', {
+      sessionId,
+      timeElapsed,
+      completionPercentage: `${completionPercentage}%`,
+      dbTime: `${dbTime}ms`
+    });
+
+    return { success: true };
+  } catch (error) {
+    const dbTime = Date.now() - startTime;
+
+    if (error.message !== 'Game not found') {
+      logger.error('Database error updating game', {
+        sessionId,
+        timeElapsed,
+        error: error.message,
+        dbTime: `${dbTime}ms`,
+        stack: error.stack
+      });
+    }
+    throw error;
   }
-
-  return { success: true };
 };
