@@ -9,10 +9,12 @@ const logger = createLogger(__filename);
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true
+  })
+);
 app.use(express.json());
 
 // Health check endpoint
@@ -25,11 +27,11 @@ app.use('/api/games', gameRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  logger.error('Unhandled error in request', { 
-    error: err.message, 
+  logger.error('Unhandled error in request', {
+    error: err.message,
     stack: err.stack,
     url: req.url,
-    method: req.method 
+    method: req.method
   });
   res.status(500).json({ error: 'Something went wrong!' });
 });

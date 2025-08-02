@@ -3,6 +3,7 @@
 ## Running Migrations
 
 1. Create the database:
+
    ```bash
    createdb sudoku_db
    ```
@@ -13,6 +14,7 @@
    ```
 
 Or use the migration script:
+
 ```bash
 npm run migrate
 ```
@@ -24,6 +26,7 @@ npm run migrate
 ## Future Migrations
 
 Add new migration files with incrementing numbers:
+
 - `002_create_users.sql`
 - `003_add_user_id_to_games.sql`
 - etc.

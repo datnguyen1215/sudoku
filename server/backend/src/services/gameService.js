@@ -1,5 +1,5 @@
-import * as gameQueries from "#db/queries/games.js";
-import { v4 as uuidv4 } from "uuid";
+import * as gameQueries from '#db/queries/games.js';
+import { v4 as uuidv4 } from 'uuid';
 
 // Pre-made valid sudoku solutions (same as frontend)
 const SUDOKU_SOLUTIONS = [
@@ -12,7 +12,7 @@ const SUDOKU_SOLUTIONS = [
     [7, 1, 3, 9, 2, 4, 8, 5, 6],
     [9, 6, 1, 5, 3, 7, 2, 8, 4],
     [2, 8, 7, 4, 1, 9, 6, 3, 5],
-    [3, 4, 5, 2, 8, 6, 1, 7, 9],
+    [3, 4, 5, 2, 8, 6, 1, 7, 9]
   ],
   [
     [1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -23,7 +23,7 @@ const SUDOKU_SOLUTIONS = [
     [8, 9, 7, 2, 1, 4, 3, 6, 5],
     [5, 3, 1, 6, 4, 2, 9, 7, 8],
     [6, 4, 2, 9, 7, 8, 5, 3, 1],
-    [9, 7, 8, 5, 3, 1, 6, 4, 2],
+    [9, 7, 8, 5, 3, 1, 6, 4, 2]
   ],
   [
     [9, 1, 2, 3, 4, 5, 6, 7, 8],
@@ -34,32 +34,41 @@ const SUDOKU_SOLUTIONS = [
     [7, 8, 9, 1, 2, 3, 4, 5, 6],
     [2, 3, 1, 5, 6, 4, 8, 9, 7],
     [5, 6, 4, 8, 9, 7, 2, 3, 1],
-    [8, 9, 7, 2, 3, 1, 5, 6, 4],
-  ],
+    [8, 9, 7, 2, 3, 1, 5, 6, 4]
+  ]
 ];
 
-const getClueCount = (difficulty) => {
+/**
+ * @param {string} difficulty - Game difficulty (easy, medium, hard, expert)
+ * @returns {number} Number of clues to show
+ */
+const getClueCount = difficulty => {
   const clueMap = {
     easy: 45,
     medium: 35,
     hard: 28,
-    expert: 22,
+    expert: 22
   };
   return clueMap[difficulty] || 35;
 };
 
-const generateSessionId = () => {
-  return uuidv4();
-};
+/**
+ * @returns {string} UUID v4 session identifier
+ */
+const generateSessionId = () => uuidv4();
 
-const generateSudokuPuzzle = (difficulty) => {
+/**
+ * @param {string} difficulty - Game difficulty level
+ * @returns {{puzzleGrid: Array<Array<number|null>>, solutionGrid: Array<Array<number>>}}
+ */
+const generateSudokuPuzzle = difficulty => {
   // Select a random complete solution
-  const solutionGrid = SUDOKU_SOLUTIONS[
-    Math.floor(Math.random() * SUDOKU_SOLUTIONS.length)
-  ].map((row) => [...row]);
+  const solutionGrid = SUDOKU_SOLUTIONS[Math.floor(Math.random() * SUDOKU_SOLUTIONS.length)].map(
+    row => [...row]
+  );
 
   // Create puzzle grid by removing numbers
-  const puzzleGrid = solutionGrid.map((row) => [...row]);
+  const puzzleGrid = solutionGrid.map(row => [...row]);
   const clueCount = getClueCount(difficulty);
   const totalCells = 81;
   const cellsToRemove = totalCells - clueCount;
@@ -86,22 +95,23 @@ const generateSudokuPuzzle = (difficulty) => {
 
   return {
     puzzleGrid,
-    solutionGrid,
+    solutionGrid
   };
 };
 
-export const createNewGame = async (difficulty) => {
+/**
+ * @param {string} difficulty - Game difficulty (easy, medium, hard, expert)
+ * @returns {Promise<{sessionId: string, difficulty: string, puzzle: Array<Array<number|null>>, startTime: Date}>}
+ */
+export const createNewGame = async difficulty => {
   const sessionId = generateSessionId();
   const { puzzleGrid, solutionGrid } = generateSudokuPuzzle(difficulty);
-
-  console.log("Generated sessionId:", sessionId);
-  console.log("PuzzleGrid sample:", puzzleGrid[0]);
 
   const game = await gameQueries.createGame(
     sessionId,
     difficulty,
     puzzleGrid, // PostgreSQL JSONB handles serialization
-    solutionGrid, // PostgreSQL JSONB handles serialization
+    solutionGrid // PostgreSQL JSONB handles serialization
   );
 
   // Return without solution for client
@@ -109,15 +119,20 @@ export const createNewGame = async (difficulty) => {
     sessionId: game.session_id,
     difficulty: game.difficulty,
     puzzle: game.puzzle_grid, // PostgreSQL JSONB returns parsed object
-    startTime: game.created_at,
+    startTime: game.created_at
   };
 };
 
-export const getGameById = async (sessionId) => {
+/**
+ * @param {string} sessionId - Game session identifier
+ * @returns {Promise<{sessionId: string, difficulty: string, puzzle: Array<Array<number|null>>, currentGrid: Array<Array<number|null>>, timeElapsed: number, startTime: Date}>}
+ * @throws {Error} When game is not found
+ */
+export const getGameById = async sessionId => {
   const game = await gameQueries.getGame(sessionId);
 
   if (!game) {
-    throw new Error("Game not found");
+    throw new Error('Game not found');
   }
 
   // Return without solution for client
@@ -127,19 +142,26 @@ export const getGameById = async (sessionId) => {
     puzzle: game.puzzle_grid, // PostgreSQL JSONB returns parsed object
     currentGrid: game.current_grid, // PostgreSQL JSONB returns parsed object
     timeElapsed: game.time_elapsed,
-    startTime: game.created_at,
+    startTime: game.created_at
   };
 };
 
+/**
+ * @param {string} sessionId - Game session identifier
+ * @param {Array<Array<number|null>>} currentGrid - Current game state
+ * @param {number} timeElapsed - Time elapsed in seconds
+ * @returns {Promise<{success: boolean}>}
+ * @throws {Error} When game is not found
+ */
 export const updateGameState = async (sessionId, currentGrid, timeElapsed) => {
   const game = await gameQueries.updateGame(
     sessionId,
     currentGrid, // PostgreSQL JSONB handles serialization
-    timeElapsed,
+    timeElapsed
   );
 
   if (!game) {
-    throw new Error("Game not found");
+    throw new Error('Game not found');
   }
 
   return { success: true };
