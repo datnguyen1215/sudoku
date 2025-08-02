@@ -35,8 +35,8 @@
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-2) 0;
+    gap: clamp(0.25rem, 1vw, 0.75rem);
+    padding: clamp(0.25rem, 1vh, 0.5rem) 0;
     border-bottom: 1px solid var(--color-neutral-200);
   }
 
@@ -49,19 +49,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--space-1);
+    gap: 0;
   }
 
   .header-right {
     display: flex;
     justify-content: flex-end;
-    gap: var(--space-2);
+    gap: clamp(0.25rem, 1vw, 0.5rem);
   }
 
   .timer-display {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: clamp(0.125rem, 0.5vw, 0.25rem);
     font-weight: var(--font-weight-medium);
   }
 
@@ -72,7 +72,7 @@
 
   .timer-value {
     color: var(--color-neutral-900);
-    font-size: var(--font-size-lg);
+    font-size: clamp(0.875rem, 2vw, 1.125rem);
     font-weight: var(--font-weight-semibold);
     font-family: 'Monaco', 'Menlo', monospace;
   }
@@ -80,9 +80,9 @@
   .difficulty-badge {
     background-color: var(--color-primary-100);
     color: var(--color-primary-700);
-    padding: var(--space-1) var(--space-2);
+    padding: 0.125rem 0.375rem;
     border-radius: var(--radius-base);
-    font-size: var(--font-size-xs);
+    font-size: clamp(0.5rem, 1.2vw, 0.625rem);
     font-weight: var(--font-weight-medium);
   }
 
@@ -93,15 +93,15 @@
     }
 
     .header-center {
-      gap: var(--space-0-5);
+      gap: 0;
     }
 
     .timer-display {
-      gap: var(--space-1);
+      gap: 0.125rem;
     }
 
     .timer-value {
-      font-size: var(--font-size-base);
+      font-size: clamp(0.75rem, 1.8vw, 0.875rem);
     }
   }
 </style>

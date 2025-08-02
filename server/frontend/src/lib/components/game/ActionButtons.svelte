@@ -1,6 +1,6 @@
 <script>
-  /** @type {{ isNotesMode: boolean, onToggleNotes: () => void, onErase: () => void, onCheck: () => void, disabled?: boolean }} */
-  let { isNotesMode, onToggleNotes, onErase, onCheck, disabled = false } = $props();
+  /** @type {{ isNotesMode: boolean, onToggleNotes: () => void, onErase: () => void, disabled?: boolean }} */
+  let { isNotesMode, onToggleNotes, onErase, disabled = false } = $props();
 </script>
 
 <div class="action-buttons">
@@ -28,19 +28,16 @@
     <span class="action-icon">🗑️</span>
     <span class="action-label">ERASE</span>
   </button>
-
-  <button class="action-button" onclick={onCheck} type="button" title="Check solution">
-    <span class="action-icon">✅</span>
-    <span class="action-label">CHECK</span>
-  </button>
 </div>
 
 <style>
   .action-buttons {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-3);
-    padding: var(--space-3);
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    width: 100%;
+    background-color: var(--color-neutral-100);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
   .action-button {
@@ -48,15 +45,16 @@
     border: 1px solid var(--color-neutral-300);
     color: var(--color-neutral-900);
     border-radius: var(--radius-lg);
-    padding: var(--space-3);
+    padding: clamp(0.25rem, 1vw, 0.75rem);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: var(--space-1);
+    gap: 0.5rem;
+    flex: 1;
     cursor: pointer;
     transition: all var(--transition-fast);
-    min-height: 4rem;
+    height: 2.5rem;
   }
 
   .action-button:hover:not(.disabled) {
@@ -87,12 +85,12 @@
   }
 
   .action-icon {
-    font-size: var(--font-size-xl);
+    font-size: 1rem;
     line-height: 1;
   }
 
   .action-label {
-    font-size: var(--font-size-xs);
+    font-size: 0.625rem;
     font-weight: var(--font-weight-medium);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -100,21 +98,36 @@
 
   @media (max-width: 640px) {
     .action-buttons {
-      gap: var(--space-2);
-      padding: var(--space-2);
+      gap: 0.25rem;
+      padding: 0.375rem;
     }
 
     .action-button {
-      padding: var(--space-2);
-      min-height: 3.5rem;
+      padding: 0.375rem;
+      height: 2rem;
     }
 
     .action-icon {
-      font-size: var(--font-size-lg);
+      font-size: 0.875rem;
     }
 
     .action-label {
-      font-size: var(--font-size-2xs);
+      font-size: 0.5rem;
+    }
+  }
+
+  @media (max-height: 600px) {
+    .action-button {
+      height: 1.75rem;
+      padding: 0.25rem;
+    }
+
+    .action-icon {
+      font-size: 0.75rem;
+    }
+
+    .action-label {
+      display: none;
     }
   }
 </style>

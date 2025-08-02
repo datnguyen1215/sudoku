@@ -25,7 +25,8 @@ export async function createGameSession(difficulty) {
       isPaused: false,
       isNotesMode: false,
       selectedCell: null,
-      timeElapsed: 0
+      timeElapsed: 0,
+      incorrectCells: {} // Track incorrect cells as "row,col" keys
     };
 
     // Also store in localStorage for offline support
@@ -60,7 +61,8 @@ function createLocalGameSession(difficulty) {
     isNotesMode: false,
     selectedCell: null,
     timeElapsed: 0,
-    isOffline: true // Mark as offline session
+    isOffline: true, // Mark as offline session
+    incorrectCells: {} // Track incorrect cells as "row,col" keys
   };
 
   localStorage.setItem(`sudoku_session_${sessionId}`, JSON.stringify(session));
@@ -86,7 +88,8 @@ export async function loadGameSession(sessionId) {
       isPaused: false,
       isNotesMode: false,
       selectedCell: null,
-      timeElapsed: gameData.timeElapsed || 0
+      timeElapsed: gameData.timeElapsed || 0,
+      incorrectCells: {} // Track incorrect cells as "row,col" keys
     };
 
     // Update localStorage

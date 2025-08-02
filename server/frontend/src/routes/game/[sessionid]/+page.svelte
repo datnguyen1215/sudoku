@@ -124,6 +124,18 @@
     }
 
     gameSession.grid[row][col] = number;
+
+    // Validate the entry if we have a solution
+    const cellKey = `${row},${col}`;
+    if (gameSession.solutionGrid) {
+      // Local game - we have the solution
+      if (number !== null && number !== gameSession.solutionGrid[row][col]) {
+        gameSession.incorrectCells[cellKey] = true;
+      } else {
+        delete gameSession.incorrectCells[cellKey];
+      }
+    }
+
     // Don't await to keep UI responsive
     saveGameSession(gameSession);
   }
@@ -153,6 +165,11 @@
     }
 
     gameSession.grid[row][col] = null;
+
+    // Remove from incorrect cells when erasing
+    const cellKey = `${row},${col}`;
+    delete gameSession.incorrectCells[cellKey];
+
     // Don't await to keep UI responsive
     saveGameSession(gameSession);
   }
@@ -163,44 +180,39 @@
   function showHint() {
     alert('Hint feature coming soon!');
   }
-
-  /**
-   * Checks the current solution (placeholder)
-   */
-  function checkSolution() {
-    alert('Solution check coming soon!');
-  }
 </script>
 
 {#if gameSession}
-  <div class="page-container">
-    <main class="main-content game-layout">
-      <GameHeader
-        time={formatTime(currentTime)}
-        isPaused={gameSession.isPaused}
-        difficulty={gameSession.difficulty}
-        onBack={goBack}
-        onPause={togglePause}
-        onHint={showHint}
-      />
+  <div class="game-container">
+    <GameHeader
+      time={formatTime(currentTime)}
+      isPaused={gameSession.isPaused}
+      difficulty={gameSession.difficulty}
+      onBack={goBack}
+      onPause={togglePause}
+      onHint={showHint}
+    />
 
-      <SudokuGrid
-        grid={gameSession.grid}
-        originalGrid={gameSession.originalGrid}
-        selectedCell={gameSession.selectedCell}
-        onCellSelected={handleCellSelected}
-      />
+    <div class="flex items-center justify-center h-full">
+      <div class="game-board-wrapper">
+        <SudokuGrid
+          grid={gameSession.grid}
+          originalGrid={gameSession.originalGrid}
+          selectedCell={gameSession.selectedCell}
+          incorrectCells={gameSession.incorrectCells}
+          onCellSelected={handleCellSelected}
+        />
 
-      <NumberPad onNumberSelected={handleNumberInput} disabled={!gameSession.selectedCell} />
+        <ActionButtons
+          isNotesMode={gameSession.isNotesMode}
+          onToggleNotes={toggleNotes}
+          onErase={eraseCell}
+          disabled={!gameSession.selectedCell}
+        />
 
-      <ActionButtons
-        isNotesMode={gameSession.isNotesMode}
-        onToggleNotes={toggleNotes}
-        onErase={eraseCell}
-        onCheck={checkSolution}
-        disabled={!gameSession.selectedCell}
-      />
-    </main>
+        <NumberPad onNumberSelected={handleNumberInput} disabled={!gameSession.selectedCell} />
+      </div>
+    </div>
   </div>
 {:else}
   <div class="page-container">
@@ -213,20 +225,32 @@
 {/if}
 
 <style>
-  .game-layout {
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    gap: var(--space-3);
-    max-width: min(100vw, 100vh);
-    margin: 0 auto;
-    padding: var(--space-2);
-    min-height: 100vh;
+  .game-container {
+    height: 100vh;
+    overflow: hidden;
+    padding: 0.5rem;
+    background-color: var(--color-neutral-50);
   }
 
+  .game-board-wrapper {
+    width: 100%;
+    max-width: min(calc(100vh - 100px), calc(100vw - 20px));
+    margin: 0 auto;
+    padding-top: 1rem;
+  }
+
+  /* Components stack naturally as blocks */
+
   @media (max-width: 640px) {
-    .game-layout {
-      padding: var(--space-2);
-      gap: var(--space-3);
+    .game-container {
+      padding: 0.25rem;
+      gap: 0.25rem;
+    }
+  }
+
+  @media (max-height: 700px) {
+    .game-container {
+      gap: 0.125rem;
     }
   }
 </style>

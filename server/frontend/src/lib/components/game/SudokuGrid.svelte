@@ -1,6 +1,6 @@
 <script>
-  /** @type {{ grid: Array<Array<number|null>>, originalGrid: Array<Array<number|null>>, selectedCell: Object|null, onCellSelected: (event: CustomEvent) => void }} */
-  let { grid, originalGrid, selectedCell, onCellSelected } = $props();
+  /** @type {{ grid: Array<Array<number|null>>, originalGrid: Array<Array<number|null>>, selectedCell: Object|null, incorrectCells: Object, onCellSelected: (event: CustomEvent) => void }} */
+  let { grid, originalGrid, selectedCell, incorrectCells = {}, onCellSelected } = $props();
 
   /**
    * Checks if a cell is currently selected
@@ -33,6 +33,17 @@
   }
 
   /**
+   * Checks if a cell has an incorrect value
+   * @param {number} row - Row index
+   * @param {number} col - Column index
+   * @returns {boolean}
+   */
+  function isIncorrectCell(row, col) {
+    const cellKey = `${row},${col}`;
+    return incorrectCells[cellKey] === true;
+  }
+
+  /**
    * Handles cell click, preventing selection of clue cells
    * @param {number} row - Row index
    * @param {number} col - Column index
@@ -50,55 +61,47 @@
   }
 </script>
 
-<div class="sudoku-container">
-  <div class="sudoku-grid">
-    {#each grid as row, rowIndex}
-      {#each row as cell, colIndex}
-        <button
-          class="sudoku-cell"
-          class:selected={isCellSelected(rowIndex, colIndex)}
-          class:filled={cell !== null}
-          class:clue={isClueCell(rowIndex, colIndex)}
-          class:right-border={colIndex === 2 || colIndex === 5}
-          class:bottom-border={rowIndex === 2 || rowIndex === 5}
-          onclick={() => handleCellClick(rowIndex, colIndex)}
-          type="button"
-        >
-          {cell || ''}
-        </button>
-      {/each}
+<div class="sudoku-grid">
+  {#each grid as row, rowIndex}
+    {#each row as cell, colIndex}
+      <button
+        class="sudoku-cell"
+        class:selected={isCellSelected(rowIndex, colIndex)}
+        class:filled={cell !== null}
+        class:clue={isClueCell(rowIndex, colIndex)}
+        class:incorrect={isIncorrectCell(rowIndex, colIndex)}
+        class:right-border={colIndex === 2 || colIndex === 5}
+        class:bottom-border={rowIndex === 2 || rowIndex === 5}
+        onclick={() => handleCellClick(rowIndex, colIndex)}
+        type="button"
+      >
+        {cell || ''}
+      </button>
     {/each}
-  </div>
+  {/each}
 </div>
 
 <style>
-  .sudoku-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex: 1;
-    padding: var(--space-2);
-  }
-
   .sudoku-grid {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
     grid-template-rows: repeat(9, 1fr);
-    gap: var(--sudoku-grid-gap);
+    gap: 1px;
     background-color: var(--color-neutral-900);
-    border: var(--sudoku-border-section) solid var(--color-neutral-900);
+    border: 2px solid var(--color-neutral-900);
     border-radius: var(--radius-lg);
-    padding: var(--sudoku-section-gap);
+    padding: 2px;
     aspect-ratio: 1;
-    width: min(100%, 90vh);
-    max-width: min(90vw, 90vh);
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
   }
 
   .sudoku-cell {
     background-color: var(--color-neutral-50);
     border: var(--sudoku-border-thin) solid var(--color-neutral-300);
     color: var(--color-neutral-900);
-    font-size: var(--font-size-lg);
+    font-size: clamp(1rem, 3vw, 1.5rem);
     font-weight: var(--font-weight-semibold);
     display: flex;
     align-items: center;
@@ -106,7 +109,7 @@
     cursor: pointer;
     transition: all var(--transition-fast);
     aspect-ratio: 1;
-    min-height: 2rem;
+    min-height: 0;
   }
 
   .sudoku-cell:hover {
@@ -141,6 +144,15 @@
     border-color: var(--color-neutral-300);
   }
 
+  /* Incorrect cells */
+  .sudoku-cell.incorrect {
+    color: var(--color-error);
+  }
+
+  .sudoku-cell.incorrect.selected {
+    color: var(--color-error);
+  }
+
   /* Section borders */
   .sudoku-cell.right-border {
     border-right: var(--sudoku-border-section) solid var(--color-neutral-900);
@@ -151,30 +163,20 @@
   }
 
   @media (max-width: 640px) {
-    .sudoku-container {
-      padding: var(--space-1);
-    }
-
-    .sudoku-grid {
-      width: min(95vw, 80vh);
-      max-width: min(95vw, 80vh);
-    }
-
     .sudoku-cell {
-      font-size: var(--font-size-base);
-      min-height: 1.75rem;
+      font-size: clamp(0.875rem, 2.5vw, 1.25rem);
     }
   }
 
   @media (max-width: 480px) {
-    .sudoku-grid {
-      width: min(98vw, 75vh);
-      max-width: min(98vw, 75vh);
-    }
-
     .sudoku-cell {
-      font-size: var(--font-size-sm);
-      min-height: 1.5rem;
+      font-size: clamp(0.75rem, 2vw, 1rem);
+    }
+  }
+
+  @media (max-height: 600px) {
+    .sudoku-cell {
+      font-size: clamp(0.75rem, 2vw, 1rem);
     }
   }
 </style>
