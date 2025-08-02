@@ -1,0 +1,33 @@
+{
+  "name": "sudoku-backend",
+  "version": "1.0.0",
+  "description": "Minimal backend API for Sudoku game",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "init-db": "node scripts/init-db.js",
+    "migrate": "node scripts/migrate.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "pg": "^8.11.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "imports": {
+    "#shared/*": "../../shared/*",
+    "#src/*": "./src/*",
+    "#utils/*": "./src/utils/*",
+    "#db/*": "./src/db/*",
+    "#routes/*": "./src/routes/*",
+    "#services/*": "./src/services/*"
+  }
+}
