@@ -4,7 +4,7 @@
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createNodeLogger } from '#shared/logger/node.js';
+import { createNodeLogger } from '../../../../shared/logger/node.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
