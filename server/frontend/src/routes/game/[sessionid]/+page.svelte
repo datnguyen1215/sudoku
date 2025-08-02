@@ -188,7 +188,6 @@
         grid={gameSession.grid}
         originalGrid={gameSession.originalGrid}
         selectedCell={gameSession.selectedCell}
-        isNotesMode={gameSession.isNotesMode}
         onCellSelected={handleCellSelected}
       />
 

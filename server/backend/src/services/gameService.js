@@ -1,4 +1,5 @@
-import * as gameQueries from '#db/queries/games.js';
+import * as gameQueries from "#db/queries/games.js";
+import { v4 as uuidv4 } from "uuid";
 
 // Pre-made valid sudoku solutions (same as frontend)
 const SUDOKU_SOLUTIONS = [
@@ -11,7 +12,7 @@ const SUDOKU_SOLUTIONS = [
     [7, 1, 3, 9, 2, 4, 8, 5, 6],
     [9, 6, 1, 5, 3, 7, 2, 8, 4],
     [2, 8, 7, 4, 1, 9, 6, 3, 5],
-    [3, 4, 5, 2, 8, 6, 1, 7, 9]
+    [3, 4, 5, 2, 8, 6, 1, 7, 9],
   ],
   [
     [1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -22,7 +23,7 @@ const SUDOKU_SOLUTIONS = [
     [8, 9, 7, 2, 1, 4, 3, 6, 5],
     [5, 3, 1, 6, 4, 2, 9, 7, 8],
     [6, 4, 2, 9, 7, 8, 5, 3, 1],
-    [9, 7, 8, 5, 3, 1, 6, 4, 2]
+    [9, 7, 8, 5, 3, 1, 6, 4, 2],
   ],
   [
     [9, 1, 2, 3, 4, 5, 6, 7, 8],
@@ -33,8 +34,8 @@ const SUDOKU_SOLUTIONS = [
     [7, 8, 9, 1, 2, 3, 4, 5, 6],
     [2, 3, 1, 5, 6, 4, 8, 9, 7],
     [5, 6, 4, 8, 9, 7, 2, 3, 1],
-    [8, 9, 7, 2, 3, 1, 5, 6, 4]
-  ]
+    [8, 9, 7, 2, 3, 1, 5, 6, 4],
+  ],
 ];
 
 const getClueCount = (difficulty) => {
@@ -42,25 +43,23 @@ const getClueCount = (difficulty) => {
     easy: 45,
     medium: 35,
     hard: 28,
-    expert: 22
+    expert: 22,
   };
   return clueMap[difficulty] || 35;
-}
+};
 
 const generateSessionId = () => {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
-  return `game-${timestamp}-${random}`;
-}
+  return uuidv4();
+};
 
 const generateSudokuPuzzle = (difficulty) => {
   // Select a random complete solution
-  const solutionGrid = SUDOKU_SOLUTIONS[Math.floor(Math.random() * SUDOKU_SOLUTIONS.length)].map(
-    row => [...row]
-  );
+  const solutionGrid = SUDOKU_SOLUTIONS[
+    Math.floor(Math.random() * SUDOKU_SOLUTIONS.length)
+  ].map((row) => [...row]);
 
   // Create puzzle grid by removing numbers
-  const puzzleGrid = solutionGrid.map(row => [...row]);
+  const puzzleGrid = solutionGrid.map((row) => [...row]);
   const clueCount = getClueCount(difficulty);
   const totalCells = 81;
   const cellsToRemove = totalCells - clueCount;
@@ -87,59 +86,61 @@ const generateSudokuPuzzle = (difficulty) => {
 
   return {
     puzzleGrid,
-    solutionGrid
+    solutionGrid,
   };
-}
+};
 
 export const createNewGame = async (difficulty) => {
   const sessionId = generateSessionId();
   const { puzzleGrid, solutionGrid } = generateSudokuPuzzle(difficulty);
-  
+
+  console.log("Generated sessionId:", sessionId);
+  console.log("PuzzleGrid sample:", puzzleGrid[0]);
+
   const game = await gameQueries.createGame(
     sessionId,
     difficulty,
-    JSON.stringify(puzzleGrid),
-    JSON.stringify(solutionGrid)
+    puzzleGrid, // PostgreSQL JSONB handles serialization
+    solutionGrid, // PostgreSQL JSONB handles serialization
   );
 
   // Return without solution for client
   return {
     sessionId: game.session_id,
     difficulty: game.difficulty,
-    puzzle: JSON.parse(game.puzzle_grid),
-    startTime: game.created_at
+    puzzle: game.puzzle_grid, // PostgreSQL JSONB returns parsed object
+    startTime: game.created_at,
   };
-}
+};
 
 export const getGameById = async (sessionId) => {
   const game = await gameQueries.getGame(sessionId);
-  
+
   if (!game) {
-    throw new Error('Game not found');
+    throw new Error("Game not found");
   }
 
   // Return without solution for client
   return {
     sessionId: game.session_id,
     difficulty: game.difficulty,
-    puzzle: JSON.parse(game.puzzle_grid),
-    currentGrid: JSON.parse(game.current_grid),
+    puzzle: game.puzzle_grid, // PostgreSQL JSONB returns parsed object
+    currentGrid: game.current_grid, // PostgreSQL JSONB returns parsed object
     timeElapsed: game.time_elapsed,
-    startTime: game.created_at
+    startTime: game.created_at,
   };
-}
+};
 
 export const updateGameState = async (sessionId, currentGrid, timeElapsed) => {
   const game = await gameQueries.updateGame(
     sessionId,
-    JSON.stringify(currentGrid),
-    timeElapsed
+    currentGrid, // PostgreSQL JSONB handles serialization
+    timeElapsed,
   );
 
   if (!game) {
-    throw new Error('Game not found');
+    throw new Error("Game not found");
   }
 
   return { success: true };
-}
-
+};

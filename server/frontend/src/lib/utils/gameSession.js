@@ -6,15 +6,6 @@ import { createLogger } from '$lib/utils/logger.js';
 
 const logger = createLogger('gameSession.js');
 
-/**
- * Generates a unique session ID for a new game
- * @returns {string} Session ID in format: game-{timestamp}-{random}
- */
-export function generateSessionId() {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
-  return `game-${timestamp}-${random}`;
-}
 
 /**
  * Creates a new game session with the specified difficulty
@@ -55,7 +46,8 @@ export async function createGameSession(difficulty) {
  * @returns {Object} Game session data
  */
 function createLocalGameSession(difficulty) {
-  const sessionId = generateSessionId();
+  // Generate temporary local session ID with timestamp to ensure uniqueness
+  const sessionId = `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const { puzzleGrid, solutionGrid } = generateSudokuPuzzle(difficulty);
 
   const session = {

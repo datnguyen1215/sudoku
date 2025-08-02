@@ -8,9 +8,6 @@
   /** @type {Object|null} */
   export let selectedCell;
 
-  /** @type {boolean} */
-  export let isNotesMode;
-
   /** @type {(event: CustomEvent) => void} */
   export let onCellSelected;
 

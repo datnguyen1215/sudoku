@@ -2,8 +2,8 @@
  * Logger utility for frontend
  */
 
-import { BrowserLogger } from '$shared/logger/browser.js';
-import { LOG_LEVELS } from '$shared/logger/index.mjs';
+import { createBrowserLogger } from '$shared/logger/browser.js';
+import { LOG_LEVELS } from '$shared/logger/index.js';
 
 // Export a factory function for creating loggers
 export function createLogger(filename) {
@@ -13,7 +13,7 @@ export function createLogger(filename) {
     filename = filename.replace('+page.svelte', 'page');
   }
   
-  return new BrowserLogger(filename || 'app');
+  return createBrowserLogger(filename || 'app');
 }
 
 // Re-export LOG_LEVELS for convenience
