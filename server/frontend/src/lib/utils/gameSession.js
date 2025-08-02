@@ -29,14 +29,20 @@ export async function createGameSession(difficulty) {
       incorrectCells: {} // Track incorrect cells as "row,col" keys
     };
 
+    // Find the matching solution for backend games
+    const matchingSolution = findMatchingSolution(gameData.puzzle);
+    if (matchingSolution) {
+      session.solutionGrid = matchingSolution;
+    }
+
     // Also store in localStorage for offline support
     localStorage.setItem(`sudoku_session_${session.id}`, JSON.stringify(session));
 
     return session;
   } catch (error) {
     console.error('Failed to create game session:', error);
-    // Fallback to local generation if API fails
-    return createLocalGameSession(difficulty);
+    // Re-throw error to be handled by the caller
+    throw new Error(`Backend service is unavailable. Please try again later.`);
   }
 }
 
@@ -91,6 +97,12 @@ export async function loadGameSession(sessionId) {
       timeElapsed: gameData.timeElapsed || 0,
       incorrectCells: {} // Track incorrect cells as "row,col" keys
     };
+
+    // Find the matching solution for backend games
+    const matchingSolution = findMatchingSolution(gameData.puzzle);
+    if (matchingSolution) {
+      session.solutionGrid = matchingSolution;
+    }
 
     // Update localStorage
     localStorage.setItem(`sudoku_session_${sessionId}`, JSON.stringify(session));
@@ -182,6 +194,34 @@ const SUDOKU_SOLUTIONS = [
     [8, 9, 7, 2, 3, 1, 5, 6, 4]
   ]
 ];
+
+/**
+ * Finds which solution matches the given puzzle by checking clues
+ * @param {Array<Array<number|null>>} puzzleGrid - The puzzle with clues
+ * @returns {Array<Array<number>>|null} The matching solution or null if none found
+ */
+function findMatchingSolution(puzzleGrid) {
+  for (const solution of SUDOKU_SOLUTIONS) {
+    let matches = true;
+
+    // Check if all non-null values in puzzle match the solution
+    for (let row = 0; row < 9; row++) {
+      for (let col = 0; col < 9; col++) {
+        if (puzzleGrid[row][col] !== null && puzzleGrid[row][col] !== solution[row][col]) {
+          matches = false;
+          break;
+        }
+      }
+      if (!matches) break;
+    }
+
+    if (matches) {
+      return solution.map(row => [...row]); // Return a deep copy
+    }
+  }
+
+  return null; // No matching solution found
+}
 
 /**
  * Gets difficulty-based clue count mapping

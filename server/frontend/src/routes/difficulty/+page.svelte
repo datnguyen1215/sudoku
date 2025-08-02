@@ -56,7 +56,7 @@
       goto(`/game/${session.id}`);
     } catch (error) {
       logger.error('Failed to start game', { error: error.message });
-      alert('Failed to start game. Please try again.');
+      alert(error.message || 'Failed to start game. Please try again.');
     }
   };
 

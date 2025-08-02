@@ -104,6 +104,16 @@
     --sudoku-grid-gap: 1px;
     --sudoku-section-gap: 3px;
 
+    /* Sudoku Cell Colors - Enhanced for better contrast */
+    --sudoku-cell-bg: #ffffff;
+    --sudoku-cell-clue-bg: #f5f5f4;
+    --sudoku-cell-selected-bg: #c4d0a4;
+    --sudoku-cell-hover-bg: #f6f7f3;
+    --sudoku-cell-filled-bg: #f9f7f4;
+    --sudoku-cell-same-value-bg: #f7e4dd;
+    --sudoku-cell-related-bg: #fdf6f3;
+    --sudoku-grid-border-color: #292524;
+
     /* Interactive Elements */
     --button-height-sm: 2.25rem;
     --button-height-base: 2.5rem;
