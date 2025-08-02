@@ -1,15 +1,16 @@
 <script>
-  /** @type {{ isNotesMode: boolean, onToggleNotes: () => void, onErase: () => void, disabled?: boolean }} */
-  let { isNotesMode, onToggleNotes, onErase, disabled = false } = $props();
+  import { getGameContext } from '$lib/context/gameContext.svelte.js';
+
+  const game = getGameContext();
 </script>
 
 <div class="action-buttons">
   <button
     class="action-button"
-    class:active={isNotesMode}
-    class:disabled
-    onclick={onToggleNotes}
-    {disabled}
+    class:active={game.gameSession?.isNotesMode}
+    class:disabled={!game.gameSession?.selectedCell}
+    onclick={game.toggleNotes}
+    disabled={!game.gameSession?.selectedCell}
     type="button"
     title="Toggle notes mode"
   >
@@ -19,9 +20,9 @@
 
   <button
     class="action-button"
-    class:disabled
-    onclick={onErase}
-    {disabled}
+    class:disabled={!game.gameSession?.selectedCell}
+    onclick={game.eraseCell}
+    disabled={!game.gameSession?.selectedCell}
     type="button"
     title="Erase selected cell"
   >

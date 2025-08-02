@@ -1,6 +1,7 @@
 <script>
-  /** @type {{ grid: Array<Array<number|null>>, originalGrid: Array<Array<number|null>>, selectedCell: Object|null, incorrectCells: Object, notes: Object, flashingCells: Object, onCellSelected: (event: CustomEvent) => void }} */
-  let { grid, originalGrid, selectedCell, incorrectCells = {}, notes = {}, flashingCells = {}, onCellSelected } = $props();
+  import { getGameContext } from '$lib/context/gameContext.svelte.js';
+
+  const game = getGameContext();
 
   /**
    * Checks if a cell is currently selected
@@ -9,7 +10,7 @@
    * @returns {boolean}
    */
   function isCellSelected(row, col) {
-    return selectedCell && selectedCell.row === row && selectedCell.col === col;
+    return game.gameSession?.selectedCell && game.gameSession.selectedCell.row === row && game.gameSession.selectedCell.col === col;
   }
 
   /**
@@ -19,6 +20,7 @@
    * @returns {boolean}
    */
   function isRelatedCell(row, col) {
+    const selectedCell = game.gameSession?.selectedCell;
     if (!selectedCell) return false;
 
     // Same row or column
@@ -40,7 +42,9 @@
    * @returns {boolean}
    */
   function hasSameValue(row, col) {
-    if (!selectedCell || !grid[selectedCell.row] || !grid[row]) return false;
+    const selectedCell = game.gameSession?.selectedCell;
+    const grid = game.gameSession?.grid;
+    if (!selectedCell || !grid?.[selectedCell.row] || !grid?.[row]) return false;
 
     const selectedValue = grid[selectedCell.row][selectedCell.col];
     const cellValue = grid[row][col];
@@ -55,6 +59,7 @@
    * @returns {boolean}
    */
   function isClueCell(row, col) {
+    const originalGrid = game.gameSession?.originalGrid;
     return originalGrid && originalGrid[row] && originalGrid[row][col] !== null;
   }
 
@@ -66,7 +71,7 @@
    */
   function isIncorrectCell(row, col) {
     const cellKey = `${row},${col}`;
-    return incorrectCells[cellKey] === true;
+    return game.gameSession?.incorrectCells?.[cellKey] === true;
   }
 
   /**
@@ -77,7 +82,7 @@
    */
   function isFlashingCell(row, col) {
     const cellKey = `${row},${col}`;
-    return flashingCells[cellKey] === true;
+    return game.flashingCells[cellKey] === true;
   }
 
 
@@ -89,7 +94,7 @@
    */
   function getCellNotes(row, col) {
     const cellKey = `${row},${col}`;
-    const cellNotes = notes[cellKey];
+    const cellNotes = game.gameSession?.notes?.[cellKey];
     return cellNotes ? Array.from(cellNotes).sort() : [];
   }
 
@@ -102,12 +107,12 @@
     const event = new CustomEvent('cellSelected', {
       detail: { row, col }
     });
-    onCellSelected(event);
+    game.handleCellSelected(event);
   }
 </script>
 
 <div class="sudoku-grid">
-  {#each grid as row, rowIndex}
+  {#each game.gameSession?.grid || [] as row, rowIndex}
     {#each row as cell, colIndex}
       <button
         class="sudoku-cell"

@@ -1,18 +1,19 @@
 <script>
-  /** @type {{ onNumberSelected: (event: CustomEvent) => void, disabled?: boolean }} */
-  let { onNumberSelected, disabled = false } = $props();
+  import { getGameContext } from '$lib/context/gameContext.svelte.js';
+
+  const game = getGameContext();
 
   /**
    * Handles number button click
    * @param {number} number - The selected number (1-9)
    */
   function handleNumberClick(number) {
-    if (disabled) return;
+    if (!game.gameSession?.selectedCell) return;
 
     const event = new CustomEvent('numberSelected', {
       detail: number
     });
-    onNumberSelected(event);
+    game.handleNumberInput(event);
   }
 
   /** @type {number[]} */
@@ -23,9 +24,9 @@
   {#each numbers as number}
     <button
       class="number-button"
-      class:disabled
+      class:disabled={!game.gameSession?.selectedCell}
       onclick={() => handleNumberClick(number)}
-      {disabled}
+      disabled={!game.gameSession?.selectedCell}
       type="button"
     >
       {number}
@@ -75,6 +76,13 @@
   }
 
   .number-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--color-neutral-200);
+    color: var(--color-neutral-500);
+  }
+
+  .number-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     background-color: var(--color-neutral-200);
