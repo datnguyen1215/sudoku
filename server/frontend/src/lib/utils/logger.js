@@ -12,7 +12,7 @@ export function createLogger(filename) {
     // Convert '+page.svelte' to the route name
     filename = filename.replace('+page.svelte', 'page');
   }
-  
+
   return createBrowserLogger(filename || 'app');
 }
 

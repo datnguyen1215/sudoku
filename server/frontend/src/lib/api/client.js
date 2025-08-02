@@ -9,11 +9,11 @@ class ApiError extends Error {
 
 async function handleResponse(response) {
   const data = await response.json();
-  
+
   if (!response.ok) {
     throw new ApiError(data.error || 'API request failed', response.status);
   }
-  
+
   return data;
 }
 
@@ -22,11 +22,11 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/games`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ difficulty }),
+      body: JSON.stringify({ difficulty })
     });
-    
+
     return handleResponse(response);
   },
 
@@ -39,11 +39,11 @@ export const api = {
     const response = await fetch(`${API_BASE_URL}/games/${sessionId}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ currentGrid, timeElapsed }),
+      body: JSON.stringify({ currentGrid, timeElapsed })
     });
-    
+
     return handleResponse(response);
   }
 };

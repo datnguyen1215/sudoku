@@ -1,18 +1,6 @@
 <script>
-  /** @type {boolean} */
-  export let isNotesMode;
-
-  /** @type {() => void} */
-  export let onToggleNotes;
-
-  /** @type {() => void} */
-  export let onErase;
-
-  /** @type {() => void} */
-  export let onCheck;
-
-  /** @type {boolean} */
-  export let disabled = false;
+  /** @type {{ isNotesMode: boolean, onToggleNotes: () => void, onErase: () => void, onCheck: () => void, disabled?: boolean }} */
+  let { isNotesMode, onToggleNotes, onErase, onCheck, disabled = false } = $props();
 </script>
 
 <div class="action-buttons">

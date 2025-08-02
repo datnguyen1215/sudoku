@@ -1,15 +1,6 @@
 <script>
-  /** @type {Array<Array<number|null>>} */
-  export let grid;
-
-  /** @type {Array<Array<number|null>>} */
-  export let originalGrid;
-
-  /** @type {Object|null} */
-  export let selectedCell;
-
-  /** @type {(event: CustomEvent) => void} */
-  export let onCellSelected;
+  /** @type {{ grid: Array<Array<number|null>>, originalGrid: Array<Array<number|null>>, selectedCell: Object|null, onCellSelected: (event: CustomEvent) => void }} */
+  let { grid, originalGrid, selectedCell, onCellSelected } = $props();
 
   /**
    * Checks if a cell is currently selected

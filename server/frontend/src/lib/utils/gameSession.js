@@ -6,7 +6,6 @@ import { createLogger } from '$lib/utils/logger.js';
 
 const logger = createLogger('gameSession.js');
 
-
 /**
  * Creates a new game session with the specified difficulty
  * @param {string} difficulty - The difficulty level (easy, medium, hard, expert)
@@ -16,7 +15,7 @@ export async function createGameSession(difficulty) {
   try {
     // Call backend API to create game
     const gameData = await api.createGame(difficulty);
-    
+
     const session = {
       id: gameData.sessionId,
       difficulty: gameData.difficulty,
@@ -77,7 +76,7 @@ export async function loadGameSession(sessionId) {
   try {
     // Try to load from backend first
     const gameData = await api.getGame(sessionId);
-    
+
     const session = {
       id: gameData.sessionId,
       difficulty: gameData.difficulty,
@@ -92,7 +91,7 @@ export async function loadGameSession(sessionId) {
 
     // Update localStorage
     localStorage.setItem(`sudoku_session_${sessionId}`, JSON.stringify(session));
-    
+
     return session;
   } catch (error) {
     console.log('Failed to load from API, trying localStorage:', error.message);
@@ -115,14 +114,16 @@ export async function saveGameSession(session) {
   try {
     // Save to localStorage immediately
     localStorage.setItem(`sudoku_session_${session.id}`, JSON.stringify(session));
-    
+
     // If not an offline session, also save to backend
     if (!session.isOffline) {
       try {
         await api.updateGame(session.id, session.grid, session.timeElapsed);
         logger.debug('Game saved to backend', { sessionId: session.id });
       } catch (apiError) {
-        logger.warn('Failed to save to backend, but localStorage save succeeded', { error: apiError.message });
+        logger.warn('Failed to save to backend, but localStorage save succeeded', {
+          error: apiError.message
+        });
       }
     }
   } catch (error) {

@@ -1,9 +1,6 @@
 <script>
-  /** @type {(event: CustomEvent) => void} */
-  export let onNumberSelected;
-
-  /** @type {boolean} */
-  export let disabled = false;
+  /** @type {{ onNumberSelected: (event: CustomEvent) => void, disabled?: boolean }} */
+  let { onNumberSelected, disabled = false } = $props();
 
   /**
    * Handles number button click

@@ -1,21 +1,6 @@
 <script>
-  /** @type {string} */
-  export let time;
-
-  /** @type {boolean} */
-  export let isPaused;
-
-  /** @type {string} */
-  export let difficulty;
-
-  /** @type {() => void} */
-  export let onBack;
-
-  /** @type {() => void} */
-  export let onPause;
-
-  /** @type {() => void} */
-  export let onHint;
+  /** @type {{ time: string, isPaused: boolean, difficulty: string, onBack: () => void, onPause: () => void, onHint: () => void }} */
+  let { time, isPaused, difficulty, onBack, onPause, onHint } = $props();
 </script>
 
 <header class="game-header">

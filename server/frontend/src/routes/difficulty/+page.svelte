@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { createGameSession } from '$utils/gameSession.js';
   import { createLogger } from '$utils/logger.js';
-  
+
   const logger = createLogger('difficulty/+page.svelte');
 
   /**
