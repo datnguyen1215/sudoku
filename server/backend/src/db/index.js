@@ -23,7 +23,7 @@ pool.on('error', err => {
  */
 export const testConnection = async () => {
   try {
-    const result = await pool.query('SELECT 1 as connected');
+    await pool.query('SELECT 1 as connected');
     logger.info('Database connection test successful');
     return true;
   } catch (error) {
