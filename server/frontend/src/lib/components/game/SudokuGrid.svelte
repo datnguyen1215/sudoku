@@ -80,16 +80,11 @@
   }
 
   /**
-   * Handles cell click, preventing selection of clue cells
+   * Handles cell click for all cells (including clue cells)
    * @param {number} row - Row index
    * @param {number} col - Column index
    */
   function handleCellClick(row, col) {
-    // Don't allow selection of original clue cells
-    if (isClueCell(row, col)) {
-      return;
-    }
-
     const event = new CustomEvent('cellSelected', {
       detail: { row, col }
     });
@@ -175,12 +170,18 @@
     background-color: var(--sudoku-cell-clue-bg);
     color: var(--color-neutral-700);
     font-weight: var(--font-weight-bold);
-    cursor: default;
+    cursor: pointer;
   }
 
   .sudoku-cell.clue:hover {
-    background-color: var(--sudoku-cell-clue-bg);
-    border-color: var(--color-neutral-300);
+    background-color: var(--sudoku-cell-hover-bg);
+    border-color: var(--color-primary-300);
+  }
+
+  .sudoku-cell.clue.selected {
+    background-color: var(--sudoku-cell-selected-bg);
+    border-color: var(--color-primary-700);
+    box-shadow: 0 0 0 2px var(--color-primary-700);
   }
 
   /* Incorrect cells */
@@ -204,8 +205,12 @@
   }
 
   /* Priority order for background colors */
-  .sudoku-cell.clue.related {
-    background-color: var(--sudoku-cell-clue-bg);
+  .sudoku-cell.clue.related:not(.selected) {
+    background-color: var(--sudoku-cell-related-bg);
+  }
+
+  .sudoku-cell.filled.related:not(.selected) {
+    background-color: var(--sudoku-cell-related-bg);
   }
 
   .sudoku-cell.same-value.related:not(.selected) {
