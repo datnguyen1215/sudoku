@@ -55,3 +55,40 @@ export function getFilledNumbersInBox(grid, row, col) {
   }
   return filled;
 }
+
+/**
+ * Gets valid candidates for an empty cell
+ * @param {Array<Array<number|null>>} grid - The sudoku grid
+ * @param {number} row - Row index
+ * @param {number} col - Column index
+ * @returns {Set<number>} Set of valid candidate numbers for the cell
+ */
+export function getValidCandidates(grid, row, col) {
+  // If cell already has a value, return empty set
+  if (grid[row][col] !== null) {
+    return new Set();
+  }
+
+  // Start with all possible numbers (1-9)
+  const candidates = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+  // Remove numbers that appear in the same row
+  const rowNumbers = getFilledNumbersInRow(grid, row);
+  for (const num of rowNumbers) {
+    candidates.delete(num);
+  }
+
+  // Remove numbers that appear in the same column
+  const colNumbers = getFilledNumbersInColumn(grid, col);
+  for (const num of colNumbers) {
+    candidates.delete(num);
+  }
+
+  // Remove numbers that appear in the same 3x3 box
+  const boxNumbers = getFilledNumbersInBox(grid, row, col);
+  for (const num of boxNumbers) {
+    candidates.delete(num);
+  }
+
+  return candidates;
+}

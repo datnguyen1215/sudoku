@@ -29,6 +29,28 @@
     <span class="action-icon">🗑️</span>
     <span class="action-label">ERASE</span>
   </button>
+
+  <button
+    class="action-button"
+    onclick={game.autoNoteAll}
+    type="button"
+    title="Auto-fill notes for all empty cells"
+  >
+    <span class="action-icon">🔢</span>
+    <span class="action-label">AUTO-NOTE</span>
+  </button>
+
+  <button
+    class="action-button"
+    class:disabled={!game.cellHistory || game.cellHistory.past.length === 0}
+    onclick={game.undoLastAction}
+    disabled={!game.cellHistory || game.cellHistory.past.length === 0}
+    type="button"
+    title="Undo last action"
+  >
+    <span class="action-icon">↶</span>
+    <span class="action-label">UNDO</span>
+  </button>
 </div>
 
 <style>

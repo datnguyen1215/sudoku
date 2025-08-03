@@ -10,10 +10,19 @@
   function handleNumberClick(number) {
     if (!game.gameSession?.selectedCell) return;
 
-    const event = new CustomEvent('numberSelected', {
-      detail: number
-    });
-    game.handleNumberInput(event);
+    const { row, col } = game.gameSession.selectedCell;
+    const currentValue = game.gameSession.grid[row][col];
+
+    // If clicking the same number as current cell value, erase it
+    if (currentValue === number) {
+      game.eraseCell();
+    } else {
+      // Otherwise, input the number normally
+      const event = new CustomEvent('numberSelected', {
+        detail: number
+      });
+      game.handleNumberInput(event);
+    }
   }
 
   /** @type {number[]} */

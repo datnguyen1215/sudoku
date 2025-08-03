@@ -85,6 +85,19 @@
     return game.flashingCells[cellKey] === true;
   }
 
+  /**
+   * Checks if a cell is user-entered and correct
+   * @param {number} row - Row index
+   * @param {number} col - Column index
+   * @returns {boolean}
+   */
+  function isUserEnteredCorrect(row, col) {
+    const grid = game.gameSession?.grid;
+    if (!grid || grid[row][col] === null) return false;
+
+    // Has value, not a clue, and not incorrect
+    return !isClueCell(row, col) && !isIncorrectCell(row, col);
+  }
 
   /**
    * Gets the notes for a cell as an array
@@ -120,6 +133,7 @@
         class:filled={cell !== null}
         class:clue={isClueCell(rowIndex, colIndex)}
         class:incorrect={isIncorrectCell(rowIndex, colIndex)}
+        class:user-correct={isUserEnteredCorrect(rowIndex, colIndex)}
         class:related={isRelatedCell(rowIndex, colIndex)}
         class:same-value={hasSameValue(rowIndex, colIndex)}
         class:has-notes={cell === null && getCellNotes(rowIndex, colIndex).length > 0}
@@ -211,12 +225,13 @@
     box-shadow: 0 0 0 2px var(--color-primary-700);
   }
 
-  /* Incorrect cells */
-  .sudoku-cell.incorrect {
-    color: var(--color-error);
+  /* User-entered correct cells */
+  .sudoku-cell.user-correct {
+    color: var(--color-user-entered);
   }
 
-  .sudoku-cell.incorrect.selected {
+  /* User-entered incorrect cells */
+  .sudoku-cell.incorrect {
     color: var(--color-error);
   }
 
@@ -232,11 +247,7 @@
   }
 
   /* Priority order for background colors */
-  .sudoku-cell.clue.related:not(.selected) {
-    background-color: var(--sudoku-cell-related-bg);
-  }
-
-  .sudoku-cell.filled.related:not(.selected) {
+  .sudoku-cell.related:not(.selected):is(.clue, .filled) {
     background-color: var(--sudoku-cell-related-bg);
   }
 

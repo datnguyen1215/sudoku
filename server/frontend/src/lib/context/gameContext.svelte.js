@@ -2,9 +2,11 @@
  * Game context for managing state across components using Svelte 5 runes
  */
 import { setContext, getContext } from 'svelte';
-import { loadGameSession, saveGameSession, saveGameSessionLocally, forceBackendSave } from '$utils/gameSession.js';
+import { loadGameSession, saveGameSession, saveGameSessionLocally } from '$utils/gameSession.js';
+import { getValidCandidates } from '$utils/gameSession/gridHelpers.js';
 
 const GAME_CONTEXT_KEY = Symbol('game');
+const MAX_HISTORY_SIZE = 100;
 
 /**
  * Creates and sets the game context with reactive state management
@@ -18,6 +20,7 @@ export function createGameContext(sessionId) {
   let error = $state(null);
   let currentTime = $state(0);
   let flashingCells = $state({});
+  let cellHistory = $state({ past: [] });
 
   // Timer state
   let intervalId = null;
@@ -31,6 +34,7 @@ export function createGameContext(sessionId) {
     get error() { return error; },
     get currentTime() { return currentTime; },
     get flashingCells() { return flashingCells; },
+    get cellHistory() { return cellHistory; },
 
     // Session methods
     async loadSession() {
@@ -46,6 +50,9 @@ export function createGameContext(sessionId) {
         gameSession = await loadGameSession(sessionId);
         if (!gameSession) {
           error = 'Session not found';
+        } else {
+          // Clear history when loading a new session
+          cellHistory.past = [];
         }
         return gameSession;
       } catch (err) {
@@ -57,19 +64,14 @@ export function createGameContext(sessionId) {
       }
     },
 
-    async saveSession(immediate = false) {
+    async saveSession() {
       if (!gameSession) return;
-      await saveGameSession(gameSession, immediate);
+      await saveGameSession(gameSession);
     },
 
     saveSessionLocally() {
       if (!gameSession) return;
       saveGameSessionLocally(gameSession);
-    },
-
-    async forceSave() {
-      if (!gameSession) return;
-      await forceBackendSave(gameSession);
     },
 
     // Timer methods
@@ -172,6 +174,68 @@ export function createGameContext(sessionId) {
       }, 500);
     },
 
+    /**
+     * Clears notes containing the placed number from related cells
+     */
+    clearRelatedNotes(row, col, number) {
+      if (!gameSession || !gameSession.notes || number === null) return;
+
+      const updatedNotes = { ...gameSession.notes };
+      const cellsToUpdate = new Set();
+
+      // Collect all related cells (row, column, and 3x3 box)
+      // Row cells
+      for (let c = 0; c < 9; c++) {
+        if (c !== col && gameSession.grid[row][c] === null) {
+          cellsToUpdate.add(`${row},${c}`);
+        }
+      }
+
+      // Column cells
+      for (let r = 0; r < 9; r++) {
+        if (r !== row && gameSession.grid[r][col] === null) {
+          cellsToUpdate.add(`${r},${col}`);
+        }
+      }
+
+      // 3x3 box cells
+      const boxRow = Math.floor(row / 3) * 3;
+      const boxCol = Math.floor(col / 3) * 3;
+      for (let r = boxRow; r < boxRow + 3; r++) {
+        for (let c = boxCol; c < boxCol + 3; c++) {
+          if ((r !== row || c !== col) && gameSession.grid[r][c] === null) {
+            cellsToUpdate.add(`${r},${c}`);
+          }
+        }
+      }
+
+      // Remove the number from notes in all related cells
+      let notesChanged = false;
+      for (const cellKey of cellsToUpdate) {
+        if (updatedNotes[cellKey]) {
+          const cellNotes = updatedNotes[cellKey];
+          if (cellNotes.has(number)) {
+            // Create new Set without the number
+            const newCellNotes = new Set(cellNotes);
+            newCellNotes.delete(number);
+
+            if (newCellNotes.size > 0) {
+              updatedNotes[cellKey] = newCellNotes;
+            } else {
+              // Remove empty notes
+              delete updatedNotes[cellKey];
+            }
+            notesChanged = true;
+          }
+        }
+      }
+
+      // Only update if notes actually changed
+      if (notesChanged) {
+        gameSession.notes = updatedNotes;
+      }
+    },
+
     handleNumberInput(event) {
       if (!gameSession || !gameSession.selectedCell) return;
 
@@ -182,6 +246,9 @@ export function createGameContext(sessionId) {
       if (gameSession.originalGrid && gameSession.originalGrid[row][col] !== null) {
         return;
       }
+
+      // Save cell state before modification
+      context.saveCell(row, col);
 
       const cellKey = `${row},${col}`;
 
@@ -233,6 +300,11 @@ export function createGameContext(sessionId) {
           gameSession.notes = newNotes;
         }
 
+        // Clear related notes when placing a number
+        if (number !== null) {
+          context.clearRelatedNotes(row, col, number);
+        }
+
         // Validate the entry if we have a solution
         if (gameSession.solutionGrid) {
           // Local game - we have the solution
@@ -265,6 +337,9 @@ export function createGameContext(sessionId) {
         return;
       }
 
+      // Save cell state before erasing
+      context.saveCell(row, col);
+
       const cellKey = `${row},${col}`;
 
       // Erase the value
@@ -284,6 +359,105 @@ export function createGameContext(sessionId) {
       context.saveSession();
     },
 
+    autoNoteAll() {
+      if (!gameSession || !gameSession.grid) return;
+
+      const newNotes = {};
+
+      // Go through all cells in the grid
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+          // Skip cells that already have values
+          if (gameSession.grid[row][col] !== null) continue;
+
+          // Skip original clue cells (though they should have values)
+          if (gameSession.originalGrid && gameSession.originalGrid[row][col] !== null) continue;
+
+          // Get valid candidates for this cell
+          const candidates = getValidCandidates(gameSession.grid, row, col);
+
+          // Only add to notes if there are candidates
+          if (candidates.size > 0) {
+            const cellKey = `${row},${col}`;
+            newNotes[cellKey] = candidates;
+          }
+        }
+      }
+
+      // Update notes with the new auto-generated notes
+      gameSession.notes = newNotes;
+
+      // Save the session with updated notes
+      context.saveSession();
+    },
+
+    /**
+     * Saves the current state of a cell before modification
+     * @param {number} row - Row index
+     * @param {number} col - Column index
+     */
+    saveCell(row, col) {
+      if (!gameSession) return;
+
+      const cellKey = `${row},${col}`;
+      const entry = {
+        row,
+        col,
+        previousValue: gameSession.grid[row][col],
+        previousNotes: gameSession.notes[cellKey]
+          ? new Set(gameSession.notes[cellKey])
+          : null
+      };
+
+      cellHistory.past.push(entry);
+
+      // Silently remove oldest when exceeding limit
+      if (cellHistory.past.length > MAX_HISTORY_SIZE) {
+        cellHistory.past.shift();
+      }
+    },
+
+    /**
+     * Undoes the last cell action
+     */
+    undoLastAction() {
+      if (!gameSession || cellHistory.past.length === 0) return;
+
+      const lastAction = cellHistory.past.pop();
+      const { row, col, previousValue, previousNotes } = lastAction;
+      const cellKey = `${row},${col}`;
+
+      // Restore value
+      gameSession.grid[row][col] = previousValue;
+
+      // Restore notes or clear them
+      if (previousNotes && previousNotes.size > 0) {
+        gameSession.notes = {
+          ...gameSession.notes,
+          [cellKey]: previousNotes
+        };
+      } else {
+        const newNotes = { ...gameSession.notes };
+        delete newNotes[cellKey];
+        gameSession.notes = newNotes;
+      }
+
+      // Clear incorrect status if reverting to empty
+      if (previousValue === null) {
+        delete gameSession.incorrectCells[cellKey];
+      } else if (gameSession.solutionGrid) {
+        // Re-validate if we restored a number
+        if (previousValue !== gameSession.solutionGrid[row][col]) {
+          gameSession.incorrectCells[cellKey] = true;
+        } else {
+          delete gameSession.incorrectCells[cellKey];
+        }
+      }
+
+      // Save session after undo
+      context.saveSession();
+    },
+
     // Cleanup function
     cleanup() {
       context.stopTimer();
@@ -291,7 +465,7 @@ export function createGameContext(sessionId) {
         clearTimeout(flashTimeout);
       }
       if (gameSession) {
-        context.forceSave();
+        context.saveSession();
       }
     }
   };
