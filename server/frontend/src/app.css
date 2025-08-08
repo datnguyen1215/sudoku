@@ -112,7 +112,7 @@
     --sudoku-cell-selected-bg: #c4d0a4;
     --sudoku-cell-hover-bg: #f6f7f3;
     --sudoku-cell-filled-bg: #f9f7f4;
-    --sudoku-cell-same-value-bg: #f7e4dd;
+    --sudoku-cell-same-value-bg: #dde7f7;
     --sudoku-cell-related-bg: #fdf6f3;
     --sudoku-grid-border-color: #292524;
 
