@@ -1,0 +1,6 @@
+{
+  "appId": "com.sudoku.app",
+  "appName": "Sudoku Game",
+  "webDir": "../server/frontend/build",
+  "bundledWebRuntime": false
+}
