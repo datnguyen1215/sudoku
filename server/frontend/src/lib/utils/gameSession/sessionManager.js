@@ -42,7 +42,7 @@ function prepareSessionForStorage(session) {
  */
 export async function createGameSession(difficulty) {
   try {
-    // Call backend API to create game
+    // Create game locally with offline puzzle generator
     const gameData = await api.createGame(difficulty);
 
     const session = {
@@ -59,7 +59,7 @@ export async function createGameSession(difficulty) {
       notes: {} // Track notes for each cell as "row,col": Set([1, 2, 5])
     };
 
-    // Find the matching solution for backend games
+    // Find the matching solution for generated games
     const matchingSolution = findMatchingSolution(gameData.puzzle);
     if (matchingSolution) {
       session.solutionGrid = matchingSolution;
@@ -73,7 +73,7 @@ export async function createGameSession(difficulty) {
   } catch (error) {
     console.error('Failed to create game session:', error);
     // Re-throw error to be handled by the caller
-    throw new Error(`Backend service is unavailable. Please try again later.`);
+    throw new Error(`Failed to create game. Please try again later.`);
   }
 }
 
@@ -102,20 +102,20 @@ function validateOriginalGrid(originalGrid, expectedPuzzle) {
 }
 
 /**
- * Merges localStorage UI state with backend core data
- * @param {Object} backendData - Core game data from backend
+ * Merges localStorage UI state with offline game data
+ * @param {Object} gameData - Core game data from offline generator
  * @param {Object} localStorageData - UI state from localStorage
  * @returns {Object} Merged session data
  */
-function mergeSessionData(backendData, localStorageData) {
-  // Start with backend data (authoritative for core game data)
+function mergeSessionData(gameData, localStorageData) {
+  // Start with game data (authoritative for core game data)
   const session = {
-    id: backendData.sessionId,
-    difficulty: backendData.difficulty,
-    startTime: new Date(backendData.startTime).getTime(),
-    grid: backendData.currentGrid.map(row => [...row]),
-    originalGrid: backendData.puzzle.map(row => [...row]),
-    timeElapsed: backendData.timeElapsed || 0,
+    id: gameData.sessionId,
+    difficulty: gameData.difficulty,
+    startTime: new Date(gameData.startTime).getTime(),
+    grid: gameData.currentGrid.map(row => [...row]),
+    originalGrid: gameData.puzzle.map(row => [...row]),
+    timeElapsed: gameData.timeElapsed || 0,
   };
 
   // Merge UI state from localStorage if available and valid
@@ -161,22 +161,22 @@ export async function loadGameSession(sessionId) {
   }
 
   try {
-    // Try to load core data from backend first
+    // Try to load saved game data first
     const gameData = await api.getGame(sessionId);
 
-    // Validate localStorage originalGrid against backend puzzle if available
+    // Validate localStorage originalGrid against saved puzzle if available
     if (localStorageData && localStorageData.originalGrid) {
       const isValidOriginalGrid = validateOriginalGrid(localStorageData.originalGrid, gameData.puzzle);
       if (!isValidOriginalGrid) {
-        logger.warn('localStorage originalGrid corrupted, using backend data');
+        logger.warn('localStorage originalGrid corrupted, using saved data');
         // Keep localStorage for UI state but not for corrupted originalGrid
       }
     }
 
-    // Merge backend core data with localStorage UI state
+    // Merge saved game data with localStorage UI state
     const session = mergeSessionData(gameData, localStorageData);
 
-    // Find the matching solution for backend games
+    // Find the matching solution for generated games
     const matchingSolution = findMatchingSolution(gameData.puzzle);
     if (matchingSolution) {
       session.solutionGrid = matchingSolution;

@@ -2,6 +2,7 @@
   import { getGameContext } from '$lib/context/gameContext.svelte.js';
 
   const game = getGameContext();
+  const autoNoteActive = $derived(game.autoNoteActive);
 </script>
 
 <div class="action-buttons">
@@ -32,9 +33,10 @@
 
   <button
     class="action-button"
-    onclick={game.autoNoteAll}
+    class:active={autoNoteActive}
+    onclick={game.toggleAutoNote}
     type="button"
-    title="Auto-fill notes for all empty cells"
+    title="Toggle auto-fill notes for all empty cells"
   >
     <span class="action-icon">🔢</span>
     <span class="action-label">AUTO-NOTE</span>

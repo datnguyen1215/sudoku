@@ -8,6 +8,7 @@
   import SudokuGrid from '$components/game/SudokuGrid.svelte';
   import NumberPad from '$components/game/NumberPad.svelte';
   import ActionButtons from '$components/game/ActionButtons.svelte';
+  import PauseOverlay from '$components/game/PauseOverlay.svelte';
 
   /** @type {string} */
   const sessionId = page.params.sessionid;
@@ -92,7 +93,11 @@
       onHint={showHint}
     />
 
-    <div class="flex items-center justify-center h-full">
+    <div class="game-area-container">
+      {#if game.gameSession.isPaused}
+        <PauseOverlay onResume={togglePause} />
+      {/if}
+
       <div class="game-board-wrapper">
         <SudokuGrid />
 
@@ -110,6 +115,17 @@
     overflow: hidden;
     padding: 0.5rem;
     background-color: var(--color-neutral-50);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .game-area-container {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
 
   .game-board-wrapper {

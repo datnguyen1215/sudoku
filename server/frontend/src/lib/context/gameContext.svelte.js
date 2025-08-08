@@ -21,6 +21,7 @@ export function createGameContext(sessionId) {
   let currentTime = $state(0);
   let flashingCells = $state({});
   let cellHistory = $state({ past: [] });
+  let autoNoteActive = $state(false);
 
   // Timer state
   let intervalId = null;
@@ -35,6 +36,7 @@ export function createGameContext(sessionId) {
     get currentTime() { return currentTime; },
     get flashingCells() { return flashingCells; },
     get cellHistory() { return cellHistory; },
+    get autoNoteActive() { return autoNoteActive; },
 
     // Session methods
     async loadSession() {
@@ -53,6 +55,8 @@ export function createGameContext(sessionId) {
         } else {
           // Clear history when loading a new session
           cellHistory.past = [];
+          // Reset auto-note state when loading new session
+          autoNoteActive = false;
         }
         return gameSession;
       } catch (err) {
@@ -359,33 +363,41 @@ export function createGameContext(sessionId) {
       context.saveSession();
     },
 
-    autoNoteAll() {
+    toggleAutoNote() {
       if (!gameSession || !gameSession.grid) return;
 
-      const newNotes = {};
+      if (!autoNoteActive) {
+        // Generate auto-notes
+        const newNotes = {};
 
-      // Go through all cells in the grid
-      for (let row = 0; row < 9; row++) {
-        for (let col = 0; col < 9; col++) {
-          // Skip cells that already have values
-          if (gameSession.grid[row][col] !== null) continue;
+        // Go through all cells in the grid
+        for (let row = 0; row < 9; row++) {
+          for (let col = 0; col < 9; col++) {
+            // Skip cells that already have values
+            if (gameSession.grid[row][col] !== null) continue;
 
-          // Skip original clue cells (though they should have values)
-          if (gameSession.originalGrid && gameSession.originalGrid[row][col] !== null) continue;
+            // Skip original clue cells (though they should have values)
+            if (gameSession.originalGrid && gameSession.originalGrid[row][col] !== null) continue;
 
-          // Get valid candidates for this cell
-          const candidates = getValidCandidates(gameSession.grid, row, col);
+            // Get valid candidates for this cell
+            const candidates = getValidCandidates(gameSession.grid, row, col);
 
-          // Only add to notes if there are candidates
-          if (candidates.size > 0) {
-            const cellKey = `${row},${col}`;
-            newNotes[cellKey] = candidates;
+            // Only add to notes if there are candidates
+            if (candidates.size > 0) {
+              const cellKey = `${row},${col}`;
+              newNotes[cellKey] = candidates;
+            }
           }
         }
-      }
 
-      // Update notes with the new auto-generated notes
-      gameSession.notes = newNotes;
+        // Update notes with the new auto-generated notes
+        gameSession.notes = newNotes;
+        autoNoteActive = true;
+      } else {
+        // Clear all notes
+        gameSession.notes = {};
+        autoNoteActive = false;
+      }
 
       // Save the session with updated notes
       context.saveSession();

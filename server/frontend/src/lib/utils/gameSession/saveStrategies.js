@@ -34,7 +34,7 @@ export function saveGameSessionLocally(session) {
 }
 
 /**
- * Saves a game session to both localStorage and backend immediately
+ * Saves a game session to localStorage with optional API sync
  * @param {Object} session - The session data to save
  */
 export async function saveGameSession(session) {
@@ -42,13 +42,13 @@ export async function saveGameSession(session) {
     // Always save to localStorage immediately
     saveGameSessionLocally(session);
 
-    // If not an offline session, also save to backend
+    // For offline games, also update via API (no-op for current offline-only implementation)
     if (!session.isOffline) {
       try {
         await api.updateGame(session.id, session.grid, session.timeElapsed);
-        logger.debug('Game saved to backend', { sessionId: session.id });
+        logger.debug('Game progress synced', { sessionId: session.id });
       } catch (apiError) {
-        logger.warn('Failed to save to backend, but localStorage save succeeded', {
+        logger.warn('Failed to sync game progress, but localStorage save succeeded', {
           error: apiError.message
         });
       }
