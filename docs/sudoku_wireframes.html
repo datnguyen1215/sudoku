@@ -1,0 +1,1076 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sudoku App Wireframes - Warm Desert Theme</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          sans-serif;
+        background: linear-gradient(135deg, #faf3e0 0%, #f5deb3 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: #3e2723;
+      }
+
+      .wireframe-container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 20px;
+        background: #fff8e7;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .header h1 {
+        color: #3e2723;
+        margin-bottom: 10px;
+        font-size: 32px;
+      }
+
+      .header p {
+        color: #5d4e37;
+        font-size: 16px;
+      }
+
+      .screens-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .screen-wrapper {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .screen-title {
+        color: #3e2723;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #8b6b47;
+      }
+
+      .mobile-frame {
+        width: 320px;
+        height: 568px;
+        margin: 0 auto;
+        border: 2px solid #6b4423;
+        border-radius: 20px;
+        overflow: hidden;
+        background: #fff8e7;
+        position: relative;
+      }
+
+      .status-bar {
+        height: 24px;
+        background: #6b4423;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        color: white;
+        font-size: 11px;
+      }
+
+      .screen-content {
+        height: calc(100% - 24px);
+        overflow: hidden;
+        padding: 15px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Home Screen Styles */
+      .home-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+      }
+
+      .app-logo {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #d2691e, #dda15e);
+        border-radius: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 36px;
+        font-weight: bold;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .app-title {
+        font-size: 36px;
+        font-weight: bold;
+        color: #4a2c2a;
+        margin-bottom: 8px;
+      }
+
+      .app-subtitle {
+        font-size: 14px;
+        color: #8b6b47;
+        margin-bottom: 40px;
+      }
+
+      .menu-buttons {
+        width: 100%;
+        max-width: 240px;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 14px 20px;
+        margin-bottom: 12px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        display: block;
+      }
+
+      .btn-primary {
+        background: #d2691e;
+        color: white;
+        box-shadow: 0 3px 6px rgba(210, 105, 30, 0.3);
+      }
+
+      .btn-primary:hover {
+        background: #bc5c18;
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: #8b6b47;
+        color: white;
+        box-shadow: 0 2px 4px rgba(139, 107, 71, 0.3);
+      }
+
+      .btn-secondary:hover {
+        background: #7a5d3f;
+      }
+
+      .btn-continue {
+        background: #dda15e;
+        color: white;
+      }
+
+      /* Game Screen Styles */
+      .game-screen {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #8b6b47;
+        flex-shrink: 0;
+      }
+
+      .game-timer {
+        font-size: 16px;
+        font-weight: bold;
+        color: #4a2c2a;
+      }
+
+      .game-difficulty {
+        font-size: 12px;
+        color: #8b6b47;
+        background: #f5f0e6;
+        padding: 3px 8px;
+        border-radius: 10px;
+      }
+
+      .sudoku-grid-mini {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        margin: 0 auto;
+        border: 3px solid #6b4423;
+        border-radius: 6px;
+        background: #fff8e7;
+        display: grid;
+        grid-template-columns: repeat(9, 1fr);
+        grid-template-rows: repeat(9, 1fr);
+        gap: 0;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+        flex-shrink: 0;
+      }
+
+      .sudoku-cell {
+        border: 1px solid #8b6b47;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+        color: #3e2723;
+        cursor: pointer;
+        transition: all 0.2s;
+        aspect-ratio: 1 / 1;
+      }
+
+      .sudoku-cell:nth-child(3n):not(:nth-child(9n)) {
+        border-right: 2px solid #6b4423;
+      }
+
+      .sudoku-cell:nth-child(n + 19):nth-child(-n + 27),
+      .sudoku-cell:nth-child(n + 46):nth-child(-n + 54) {
+        border-bottom: 2px solid #6b4423;
+      }
+
+      .cell-given {
+        background: #f5f0e6;
+        color: #4a2c2a;
+        font-weight: bold;
+      }
+
+      .cell-selected {
+        background: #ffe5b4 !important;
+        border-color: #dda15e !important;
+      }
+
+      .cell-error {
+        background: rgba(255, 200, 200, 0.5) !important;
+        color: #b22222 !important;
+      }
+
+      .cell-related {
+        background: #ffe4b5;
+      }
+
+      .number-pad {
+        display: flex;
+        gap: 4px;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .num-btn {
+        width: 26px;
+        height: 32px;
+        border: 1px solid #8b6b47;
+        background: #fff8e7;
+        border-radius: 5px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #3e2723;
+        cursor: pointer;
+        transition: all 0.2s;
+        padding: 0;
+      }
+
+      .num-btn:hover {
+        background: #ffe5b4;
+        border-color: #dda15e;
+      }
+
+      .num-btn.erase {
+        background: #dda15e;
+        color: white;
+        width: 40px;
+        font-size: 11px;
+      }
+
+      .game-controls {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .control-btn {
+        padding: 6px 12px;
+        background: #f5f0e6;
+        border: 1px solid #8b6b47;
+        border-radius: 6px;
+        color: #3e2723;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .control-btn:hover {
+        background: #ffe5b4;
+      }
+
+      /* Difficulty Screen */
+      .difficulty-screen {
+        padding-top: 20px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .difficulty-title {
+        font-size: 20px;
+        color: #4a2c2a;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .difficulty-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .difficulty-card {
+        background: #fff8e7;
+        border: 2px solid #8b6b47;
+        border-radius: 10px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .difficulty-card:hover {
+        background: #ffe5b4;
+        border-color: #dda15e;
+        transform: translateX(5px);
+      }
+
+      .difficulty-name {
+        font-size: 16px;
+        font-weight: bold;
+        color: #3e2723;
+        margin-bottom: 4px;
+      }
+
+      .difficulty-desc {
+        font-size: 12px;
+        color: #8b6b47;
+      }
+
+      .difficulty-hints {
+        font-size: 11px;
+        color: #dda15e;
+        margin-top: 5px;
+      }
+
+      /* Settings Screen */
+      .settings-screen {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .settings-section {
+        margin-bottom: 20px;
+      }
+
+      .settings-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #4a2c2a;
+        margin-bottom: 12px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #8b6b47;
+      }
+
+      .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background: #f5f0e6;
+        border-radius: 8px;
+        margin-bottom: 6px;
+      }
+
+      .setting-label {
+        font-size: 13px;
+        color: #3e2723;
+      }
+
+      .toggle-switch {
+        width: 44px;
+        height: 24px;
+        background: #8b6b47;
+        border-radius: 12px;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .toggle-switch.active {
+        background: #d2691e;
+      }
+
+      .toggle-knob {
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        transition: all 0.3s;
+      }
+
+      .toggle-switch.active .toggle-knob {
+        left: 22px;
+      }
+
+      /* Stats Screen */
+      .stats-screen {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .stats-card {
+        background: #fff8e7;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border: 1px solid #8b6b47;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: #8b6b47;
+        margin-bottom: 5px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #4a2c2a;
+      }
+
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(139, 107, 71, 0.2);
+        font-size: 13px;
+      }
+
+      .stat-row:last-child {
+        border-bottom: none;
+      }
+
+      /* How to Play Screen */
+      .tutorial-screen {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .tutorial-section {
+        margin-bottom: 15px;
+      }
+
+      .tutorial-title {
+        font-size: 14px;
+        font-weight: bold;
+        color: #4a2c2a;
+        margin-bottom: 8px;
+      }
+
+      .tutorial-text {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #5d4e37;
+        margin-bottom: 8px;
+      }
+
+      .tutorial-grid-demo {
+        width: 90px;
+        height: 90px;
+        margin: 10px auto;
+        border: 2px solid #6b4423;
+        border-radius: 4px;
+        background: #fff8e7;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+      }
+
+      .demo-box {
+        border: 1px solid #8b6b47;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        color: #8b6b47;
+      }
+
+      .back-arrow {
+        display: inline-block;
+        margin-right: 5px;
+      }
+
+      .nav-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: #f5f0e6;
+        border-top: 1px solid #8b6b47;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0 20px;
+      }
+
+      .nav-item {
+        font-size: 11px;
+        color: #8b6b47;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .nav-item.active {
+        color: #d2691e;
+        font-weight: bold;
+      }
+
+      .color-legend {
+        margin-top: 30px;
+        padding: 20px;
+        background: #fff8e7;
+        border-radius: 12px;
+        border: 1px solid #8b6b47;
+      }
+
+      .color-legend h3 {
+        color: #3e2723;
+        margin-bottom: 15px;
+        font-size: 18px;
+      }
+
+      .color-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .color-box {
+        width: 30px;
+        height: 30px;
+        border-radius: 4px;
+        margin-right: 15px;
+        border: 1px solid #8b6b47;
+      }
+
+      .color-desc {
+        font-size: 14px;
+        color: #3e2723;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wireframe-container">
+      <div class="header">
+        <h1>Sudoku App Wireframes</h1>
+        <p>Warm Desert Theme - Mobile App Screens</p>
+      </div>
+
+      <div class="screens-grid">
+        <!-- Home Screen -->
+        <div class="screen-wrapper">
+          <h2 class="screen-title">1. Home Screen</h2>
+          <div class="mobile-frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span>⚡ 🔋 📶</span>
+            </div>
+            <div class="screen-content">
+              <div class="home-screen">
+                <div class="app-logo">数</div>
+                <h1 class="app-title">Sudoku</h1>
+                <p class="app-subtitle">Classic Puzzle Game</p>
+                <div class="menu-buttons">
+                  <button class="btn btn-primary">New Game</button>
+                  <button class="btn btn-continue">Continue</button>
+                  <button class="btn btn-secondary">How to Play</button>
+                  <button class="btn btn-secondary">Statistics</button>
+                  <button class="btn btn-secondary">Settings</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="screen-wrapper">
+          <h2 class="screen-title">2. Game Screen</h2>
+          <div class="mobile-frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span>⚡ 🔋 📶</span>
+            </div>
+            <div class="screen-content">
+              <div class="game-screen">
+                <div class="game-header">
+                  <span class="back-arrow">←</span>
+                  <span class="game-timer">12:34</span>
+                  <span class="game-difficulty">Medium</span>
+                </div>
+                <div class="sudoku-grid-mini">
+                  <div class="sudoku-cell cell-given">5</div>
+                  <div class="sudoku-cell cell-given">3</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">7</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">6</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">1</div>
+                  <div class="sudoku-cell cell-given">9</div>
+                  <div class="sudoku-cell cell-given">5</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">9</div>
+                  <div class="sudoku-cell cell-given">8</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">6</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">8</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">6</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">3</div>
+                  <div class="sudoku-cell cell-given">4</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">8</div>
+                  <div class="sudoku-cell cell-selected">5</div>
+                  <div class="sudoku-cell cell-given">3</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">1</div>
+                  <div class="sudoku-cell cell-given">7</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">2</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">6</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">6</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">2</div>
+                  <div class="sudoku-cell cell-given">8</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">4</div>
+                  <div class="sudoku-cell cell-given">1</div>
+                  <div class="sudoku-cell cell-given">9</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-related">5</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">8</div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell"></div>
+                  <div class="sudoku-cell cell-given">7</div>
+                  <div class="sudoku-cell cell-given">9</div>
+                </div>
+                <div class="game-controls">
+                  <button class="control-btn">Notes</button>
+                  <button class="control-btn">Hint</button>
+                  <button class="control-btn">Undo</button>
+                  <button class="control-btn">Erase</button>
+                </div>
+                <div class="number-pad">
+                  <button class="num-btn">1</button>
+                  <button class="num-btn">2</button>
+                  <button class="num-btn">3</button>
+                  <button class="num-btn">4</button>
+                  <button class="num-btn">5</button>
+                  <button class="num-btn">6</button>
+                  <button class="num-btn">7</button>
+                  <button class="num-btn">8</button>
+                  <button class="num-btn">9</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Difficulty Selection Screen -->
+        <div class="screen-wrapper">
+          <h2 class="screen-title">3. Difficulty Selection</h2>
+          <div class="mobile-frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span>⚡ 🔋 📶</span>
+            </div>
+            <div class="screen-content">
+              <div class="difficulty-screen">
+                <h2 class="difficulty-title">Choose Difficulty</h2>
+                <div class="difficulty-cards">
+                  <div class="difficulty-card">
+                    <div class="difficulty-name">Easy</div>
+                    <div class="difficulty-desc">Perfect for beginners</div>
+                    <div class="difficulty-hints">45-50 given numbers</div>
+                  </div>
+                  <div class="difficulty-card">
+                    <div class="difficulty-name">Medium</div>
+                    <div class="difficulty-desc">A moderate challenge</div>
+                    <div class="difficulty-hints">35-40 given numbers</div>
+                  </div>
+                  <div class="difficulty-card">
+                    <div class="difficulty-name">Hard</div>
+                    <div class="difficulty-desc">For experienced players</div>
+                    <div class="difficulty-hints">28-32 given numbers</div>
+                  </div>
+                  <div class="difficulty-card">
+                    <div class="difficulty-name">Expert</div>
+                    <div class="difficulty-desc">The ultimate challenge</div>
+                    <div class="difficulty-hints">22-27 given numbers</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Screen -->
+        <div class="screen-wrapper">
+          <h2 class="screen-title">4. Settings</h2>
+          <div class="mobile-frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span>⚡ 🔋 📶</span>
+            </div>
+            <div class="screen-content">
+              <div class="settings-screen">
+                <div class="game-header">
+                  <span class="back-arrow">←</span>
+                  <span style="font-weight: bold">Settings</span>
+                  <span></span>
+                </div>
+                <div class="settings-section">
+                  <h3 class="settings-title">Game Options</h3>
+                  <div class="setting-item">
+                    <span class="setting-label">Show Timer</span>
+                    <div class="toggle-switch active">
+                      <div class="toggle-knob"></div>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <span class="setting-label">Auto-Check Errors</span>
+                    <div class="toggle-switch">
+                      <div class="toggle-knob"></div>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <span class="setting-label">Highlight Numbers</span>
+                    <div class="toggle-switch active">
+                      <div class="toggle-knob"></div>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <span class="setting-label">Show Hints</span>
+                    <div class="toggle-switch active">
+                      <div class="toggle-knob"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="settings-section">
+                  <h3 class="settings-title">Sound & Vibration</h3>
+                  <div class="setting-item">
+                    <span class="setting-label">Sound Effects</span>
+                    <div class="toggle-switch">
+                      <div class="toggle-knob"></div>
+                    </div>
+                  </div>
+                  <div class="setting-item">
+                    <span class="setting-label">Vibration</span>
+                    <div class="toggle-switch active">
+                      <div class="toggle-knob"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="settings-section">
+                  <h3 class="settings-title">Theme</h3>
+                  <div class="setting-item">
+                    <span class="setting-label">Warm Desert (Active)</span>
+                    <span style="color: #d2691e">✓</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistics Screen -->
+        <div class="screen-wrapper">
+          <h2 class="screen-title">5. Statistics</h2>
+          <div class="mobile-frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span>⚡ 🔋 📶</span>
+            </div>
+            <div class="screen-content">
+              <div class="stats-screen">
+                <div class="game-header">
+                  <span class="back-arrow">←</span>
+                  <span style="font-weight: bold">Statistics</span>
+                  <span></span>
+                </div>
+                <div class="stats-card">
+                  <div class="stat-label">Games Played</div>
+                  <div class="stat-value">142</div>
+                </div>
+                <div class="stats-card">
+                  <div class="stat-label">Games Won</div>
+                  <div class="stat-value">128</div>
+                </div>
+                <div class="stats-card">
+                  <div class="stat-label">Win Rate</div>
+                  <div class="stat-value">90.1%</div>
+                </div>
+                <div class="stats-card">
+                  <h4 style="color: #4a2c2a; margin-bottom: 10px">
+                    Best Times
+                  </h4>
+                  <div class="stat-row">
+                    <span>Easy</span>
+                    <span style="color: #d2691e; font-weight: bold">3:42</span>
+                  </div>
+                  <div class="stat-row">
+                    <span>Medium</span>
+                    <span style="color: #d2691e; font-weight: bold">7:15</span>
+                  </div>
+                  <div class="stat-row">
+                    <span>Hard</span>
+                    <span style="color: #d2691e; font-weight: bold">12:08</span>
+                  </div>
+                  <div class="stat-row">
+                    <span>Expert</span>
+                    <span style="color: #d2691e; font-weight: bold">18:55</span>
+                  </div>
+                </div>
+                <div class="stats-card">
+                  <div class="stat-label">Current Streak</div>
+                  <div class="stat-value">🔥 15</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- How to Play Screen -->
+        <div class="screen-wrapper">
+          <h2 class="screen-title">6. How to Play</h2>
+          <div class="mobile-frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span>⚡ 🔋 📶</span>
+            </div>
+            <div class="screen-content">
+              <div class="tutorial-screen">
+                <div class="game-header">
+                  <span class="back-arrow">←</span>
+                  <span style="font-weight: bold">How to Play</span>
+                  <span></span>
+                </div>
+                <div class="tutorial-section">
+                  <h3 class="tutorial-title">Objective</h3>
+                  <p class="tutorial-text">
+                    Fill the 9x9 grid with numbers 1-9 so that each row, column,
+                    and 3x3 box contains all digits from 1 to 9.
+                  </p>
+                </div>
+                <div class="tutorial-section">
+                  <h3 class="tutorial-title">The Grid</h3>
+                  <div class="tutorial-grid-demo">
+                    <div class="demo-box">Box 1</div>
+                    <div class="demo-box">Box 2</div>
+                    <div class="demo-box">Box 3</div>
+                    <div class="demo-box">Box 4</div>
+                    <div class="demo-box">Box 5</div>
+                    <div class="demo-box">Box 6</div>
+                    <div class="demo-box">Box 7</div>
+                    <div class="demo-box">Box 8</div>
+                    <div class="demo-box">Box 9</div>
+                  </div>
+                  <p class="tutorial-text">
+                    The grid is divided into 9 boxes, each containing 9 cells.
+                  </p>
+                </div>
+                <div class="tutorial-section">
+                  <h3 class="tutorial-title">Rules</h3>
+                  <p class="tutorial-text">
+                    • Each row must contain 1-9<br />
+                    • Each column must contain 1-9<br />
+                    • Each 3x3 box must contain 1-9<br />
+                    • No duplicates allowed!
+                  </p>
+                </div>
+                <div class="tutorial-section">
+                  <h3 class="tutorial-title">Tips</h3>
+                  <p class="tutorial-text">
+                    • Start with rows, columns, or boxes that have many given
+                    numbers<br />
+                    • Use the Notes feature to track possibilities<br />
+                    • Look for singles and pairs
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Color Legend -->
+      <div class="color-legend">
+        <h3>Warm Desert Theme Colors</h3>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+          "
+        >
+          <div class="color-item">
+            <div
+              class="color-box"
+              style="background: linear-gradient(135deg, #faf3e0, #f5deb3)"
+            ></div>
+            <span class="color-desc">Background Gradient</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #fff8e7"></div>
+            <span class="color-desc">Light Cream (#FFF8E7)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #d2691e"></div>
+            <span class="color-desc">Cinnamon (#D2691E)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #8b6b47"></div>
+            <span class="color-desc">Desert Brown (#8B6B47)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #6b4423"></div>
+            <span class="color-desc">Dark Sienna (#6B4423)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #3e2723"></div>
+            <span class="color-desc">Dark Chocolate (#3E2723)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #ffe5b4"></div>
+            <span class="color-desc">Peach (#FFE5B4)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #dda15e"></div>
+            <span class="color-desc">Coral (#DDA15E)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #f5f0e6"></div>
+            <span class="color-desc">Pale Cream (#F5F0E6)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #4a2c2a"></div>
+            <span class="color-desc">Mahogany (#4A2C2A)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #5d4e37"></div>
+            <span class="color-desc">Brown (#5D4E37)</span>
+          </div>
+          <div class="color-item">
+            <div class="color-box" style="background: #ffe4b5"></div>
+            <span class="color-desc">Apricot (#FFE4B5)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Add interactivity to toggle switches
+      document.querySelectorAll(".toggle-switch").forEach((toggle) => {
+        toggle.addEventListener("click", function () {
+          this.classList.toggle("active");
+        });
+      });
+
+      // Add hover effects to buttons
+      document
+        .querySelectorAll(".btn, .difficulty-card, .num-btn, .control-btn")
+        .forEach((btn) => {
+          btn.addEventListener("mouseenter", function () {
+            this.style.transform = "scale(1.05)";
+          });
+          btn.addEventListener("mouseleave", function () {
+            this.style.transform = "scale(1)";
+          });
+        });
+
+      // Simulate cell selection in the game grid
+      document.querySelectorAll(".sudoku-cell").forEach((cell) => {
+        cell.addEventListener("click", function () {
+          // Remove previous selection
+          document.querySelectorAll(".sudoku-cell").forEach((c) => {
+            c.classList.remove("cell-selected");
+          });
+          // Add selection to clicked cell
+          this.classList.add("cell-selected");
+        });
+      });
+    </script>
+  </body>
+</html>
+
