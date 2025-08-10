@@ -10,7 +10,7 @@ import {
  * Difficulty configuration with clue counts
  * @typedef {Object} DifficultyConfig
  * @property {string} name - Display name of the difficulty
- * @property {string} clueRange - String representation of clue count range
+ * @property {string} description - Short description of the difficulty level
  * @property {number} minClues - Minimum number of clues
  * @property {number} maxClues - Maximum number of clues
  * @property {string} color - Primary color for the difficulty button
@@ -24,7 +24,7 @@ import {
 const DIFFICULTIES = [
   {
     name: 'Easy',
-    clueRange: '30-35 clues',
+    description: 'Perfect for beginners',
     minClues: 30,
     maxClues: 35,
     color: '#4CAF50',
@@ -32,7 +32,7 @@ const DIFFICULTIES = [
   },
   {
     name: 'Medium',
-    clueRange: '25-30 clues',
+    description: 'Balanced challenge',
     minClues: 25,
     maxClues: 30,
     color: '#2196F3',
@@ -40,7 +40,7 @@ const DIFFICULTIES = [
   },
   {
     name: 'Hard',
-    clueRange: '20-25 clues',
+    description: 'For experienced players',
     minClues: 20,
     maxClues: 25,
     color: '#FF9800',
@@ -48,7 +48,7 @@ const DIFFICULTIES = [
   },
   {
     name: 'Expert',
-    clueRange: '17-20 clues',
+    description: 'Ultimate puzzle mastery',
     minClues: 17,
     maxClues: 20,
     color: '#F44336',
@@ -92,7 +92,7 @@ const DifficultySelector = ({ onSelectDifficulty, style }) => {
             
             <View style={styles.buttonContent}>
               <Text style={styles.difficultyName}>{difficulty.name}</Text>
-              <Text style={styles.clueRange}>{difficulty.clueRange}</Text>
+              <Text style={styles.difficultyDescription}>{difficulty.description}</Text>
             </View>
             
             {/* Gradient overlay effect using a lighter color */}
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginBottom: 4,
   },
-  clueRange: {
+  difficultyDescription: {
     fontSize: 14,
     color: '#ffffff',
     opacity: 0.9,
