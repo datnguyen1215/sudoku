@@ -1,145 +1,75 @@
-# IDE and Editor files
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-*.sublime-*
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.iml
-*.ipr
-*.iws
-
-# OS generated files
+# OSX
+#
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
 
-# Dependencies
-node_modules/
-bower_components/
-jspm_packages/
-
-# Build outputs
+# Xcode
+#
 build/
-dist/
-out/
-target/
-*.class
-*.jar
-*.war
-*.ear
-
-# Logs and databases
-*.log
-logs/
-*.sql
-*.sqlite
-
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# Testing
-coverage/
-.nyc_output/
-*.lcov
-.coverage
-htmlcov/
-.tox/
-.pytest_cache/
-nosetests.xml
-coverage.xml
-*.cover
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Package files
-*.tgz
-*.tar.gz
-*.zip
-
-# Temporary files
-tmp/
-temp/
-.tmp/
-.temp/
-*.tmp
-*.bak
-*.backup
-*.orig
-
-# Cache
-.cache/
-.sass-cache/
-.npm/
-.eslintcache
-.stylelintcache
-
-# Optional npm cache directory
-.npm/
-
-# Optional REPL history
-.node_repl_history
-
-# Yarn
-.yarn-integrity
-yarn-error.log
-yarn-debug.log
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Android specific (additional to what's in mobile/.gitignore)
-*.apk
-*.ap_
-*.dex
-.gradle/
-local.properties
-captures/
-.externalNativeBuild/
-.cxx/
-
-# iOS specific (if added later)
-*.xcworkspace
-*.xcuserdata
 *.pbxuser
+!default.pbxuser
 *.mode1v3
+!default.mode1v3
 *.mode2v3
+!default.mode2v3
 *.perspectivev3
-DerivedData/
+!default.perspectivev3
+xcuserdata
+*.xccheckout
+*.moved-aside
+DerivedData
 *.hmap
 *.ipa
 *.xcuserstate
+**/.xcode.env.local
 
-# SvelteKit
-.svelte-kit/
+# Android/IntelliJ
+#
+build/
+.idea
+.gradle
+local.properties
+*.iml
+*.hprof
+.cxx/
+*.keystore
+!debug.keystore
+.kotlin/
 
-# Capacitor generated files
-**/android/app/src/main/assets/public/
-**/android/app/src/main/assets/capacitor.config.json
-**/android/app/src/main/assets/capacitor.plugins.json
+# node.js
+#
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
+# screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/
+
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
+# Bundle artifact
+*.jsbundle
+
+# Ruby / CocoaPods
+**/Pods/
+/vendor/bundle/
+
+# Temporary files created by Metro to check the health of the file watcher
+.metro-health-check*
+
+# testing
+/coverage
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
