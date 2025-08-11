@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  SafeAreaView,
-} from 'react-native';
+import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import { hasSavedGame } from '../services/storage';
 import DifficultySelector from '../components/DifficultySelector';
+import Modal from '../components/Modal';
 import packageInfo from '../../package.json';
 import { themeClasses } from '../theme/colors';
 
@@ -39,7 +35,7 @@ const HomeScreen = ({ navigation }) => {
    * Handles difficulty selection and navigates to game screen
    * @param {Object} difficulty - Selected difficulty configuration
    */
-  const handleDifficultySelect = (difficulty) => {
+  const handleDifficultySelect = difficulty => {
     setShowDifficultySelector(false);
     navigation.navigate('Game', { difficulty });
   };
@@ -52,65 +48,70 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView className={themeClasses.safeArea}>
-      {showDifficultySelector ? (
-        <View className={themeClasses.difficultyContainer}>
-          <View className={themeClasses.backButtonContainer}>
-            <TouchableOpacity
-              className={themeClasses.backButton}
-              onPress={handleBackFromDifficulty}>
-              <Text className={themeClasses.backButtonText}>← Back</Text>
-            </TouchableOpacity>
-          </View>
-          <DifficultySelector onSelectDifficulty={handleDifficultySelect} />
+    <SafeAreaView className="flex-1 bg-sand">
+      <View className={themeClasses.content}>
+        {/* Logo */}
+        <View className="w-20 h-20 rounded-2xl bg-cinnamon flex items-center justify-center mb-5 shadow-lg">
+          <Text className={themeClasses.logoText}>数</Text>
         </View>
-      ) : (
-        <View className={themeClasses.content}>
-          {/* Logo with gradient */}
-          <View className={themeClasses.logo}>
-            <Text className={themeClasses.logoText}>数</Text>
-          </View>
-          
-          <Text className={themeClasses.appTitle}>Sudoku</Text>
-          <Text className={themeClasses.subtitle}>Classic Puzzle Game</Text>
-          
-          <View className={themeClasses.buttonContainer}>
+
+        <Text className={themeClasses.appTitle}>Sudoku</Text>
+        <Text className={themeClasses.subtitle}>Classic Puzzle Game</Text>
+
+        <View className={themeClasses.buttonContainer}>
+          <TouchableOpacity
+            className={`${themeClasses.buttonBase} ${themeClasses.primaryButton}`}
+            onPress={handleStartNewGame}
+          >
+            <Text className="text-white">New Game</Text>
+          </TouchableOpacity>
+
+          {savedGameExists && (
             <TouchableOpacity
-              className={`${themeClasses.buttonBase} ${themeClasses.primaryButton}`}
-              onPress={handleStartNewGame}>
-              <Text className="text-white">New Game</Text>
+              className={`${themeClasses.buttonBase} ${themeClasses.continueButton}`}
+              onPress={() => navigation.navigate('Game', { loadSaved: true })}
+            >
+              <Text className="text-white">Continue</Text>
             </TouchableOpacity>
-            
-            {savedGameExists && (
-              <TouchableOpacity
-                className={`${themeClasses.buttonBase} ${themeClasses.continueButton}`}
-                onPress={() => navigation.navigate('Game', { loadSaved: true })}>
-                <Text className="text-white">Continue</Text>
-              </TouchableOpacity>
-            )}
-            
-            <TouchableOpacity
-              className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
-              onPress={() => {/* TODO: Navigate to How to Play screen */}}>
-              <Text className="text-white">How to Play</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
-              onPress={() => {/* TODO: Navigate to Statistics screen */}}>
-              <Text className="text-white">Statistics</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
-              onPress={() => navigation.navigate('Settings')}>
-              <Text className="text-white">Settings</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <Text className={themeClasses.versionText}>v{packageInfo.version}</Text>
+          )}
+
+          <TouchableOpacity
+            className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
+            onPress={() => navigation.navigate('HowToPlay')}
+          >
+            <Text className="text-white">How to Play</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
+            onPress={() => {
+              /* TODO: Navigate to Statistics screen */
+            }}
+          >
+            <Text className="text-white">Statistics</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
+            onPress={() => navigation.navigate('Settings')}
+          >
+            <Text className="text-white">Settings</Text>
+          </TouchableOpacity>
         </View>
-      )}
+
+        <Text className={themeClasses.versionText}>v{packageInfo.version}</Text>
+      </View>
+
+      {/* Difficulty Selection Modal */}
+      <Modal
+        visible={showDifficultySelector}
+        onClose={handleBackFromDifficulty}
+      >
+        <DifficultySelector
+          onSelectDifficulty={handleDifficultySelect}
+          onClose={handleBackFromDifficulty}
+        />
+      </Modal>
     </SafeAreaView>
   );
 };
