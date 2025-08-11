@@ -46,6 +46,28 @@ const Board = ({
     );
   };
 
+  /**
+   * Get 3x3 box index (0-8) for a cell
+   * @param {number} row - Row index
+   * @param {number} col - Column index
+   * @returns {number} Box index
+   */
+  const getBoxIndex = (row, col) => {
+    return Math.floor(row / 3) * 3 + Math.floor(col / 3);
+  };
+
+  /**
+   * Check if two cells are in the same 3x3 box
+   * @param {number} row1 - First cell row
+   * @param {number} col1 - First cell column
+   * @param {number} row2 - Second cell row
+   * @param {number} col2 - Second cell column
+   * @returns {boolean} Whether cells are in same box
+   */
+  const isInSameBox = (row1, col1, row2, col2) => {
+    return getBoxIndex(row1, col1) === getBoxIndex(row2, col2);
+  };
+
   return (
     <View className="bg-sienna p-0.5 rounded-lg mx-4 aspect-square">
       <View className="flex-row flex-wrap">
@@ -65,6 +87,22 @@ const Board = ({
                 }
                 isHighlighted={shouldHighlight(value)}
                 hasError={hasError(rowIndex, colIndex)}
+                isInSameRow={selectedCell && selectedCell.row === rowIndex}
+                isInSameCol={selectedCell && selectedCell.col === colIndex}
+                isInSameBox={
+                  selectedCell &&
+                  isInSameBox(
+                    selectedCell.row,
+                    selectedCell.col,
+                    rowIndex,
+                    colIndex,
+                  )
+                }
+                hasSameValue={
+                  selectedCell &&
+                  board[selectedCell.row][selectedCell.col] !== null &&
+                  board[selectedCell.row][selectedCell.col] === value
+                }
                 showNotes={notesMode && value === null}
                 notes={notes[rowIndex][colIndex]}
                 onPress={() => onCellPress(rowIndex, colIndex)}

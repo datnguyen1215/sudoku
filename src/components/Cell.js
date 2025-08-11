@@ -9,6 +9,10 @@ import { View, Text, Pressable } from 'react-native';
  * @param {boolean} props.isSelected - Whether cell is currently selected
  * @param {boolean} props.isHighlighted - Whether cell has same number as selected
  * @param {boolean} props.hasError - Whether cell has an error
+ * @param {boolean} props.isInSameRow - Whether cell is in same row as selected
+ * @param {boolean} props.isInSameCol - Whether cell is in same column as selected
+ * @param {boolean} props.isInSameBox - Whether cell is in same 3x3 box as selected
+ * @param {boolean} props.hasSameValue - Whether cell has same value as selected
  * @param {boolean} props.showNotes - Whether to show notes mode
  * @param {Array} props.notes - Array of note numbers (1-9)
  * @param {Function} props.onPress - Callback when cell is pressed
@@ -22,17 +26,23 @@ const Cell = ({
   isSelected = false,
   isHighlighted = false,
   hasError = false,
+  isInSameRow = false,
+  isInSameCol = false,
+  isInSameBox = false,
+  hasSameValue = false,
   showNotes = false,
   notes = [],
   onPress,
   row,
   col,
 }) => {
-  // Determine cell background based on state
+  // Determine cell background based on state (priority order matters)
   const getCellBackground = () => {
     if (hasError) return 'bg-lightPink';
     if (isSelected) return 'bg-apricot';
-    if (isHighlighted) return 'bg-paleWheat';
+    if (hasSameValue && value !== null) return 'bg-peach';
+    if (isInSameBox) return 'bg-wheat';
+    if (isInSameRow || isInSameCol) return 'bg-paleWheat';
     if (isGiven) return 'bg-cream';
     return 'bg-white';
   };

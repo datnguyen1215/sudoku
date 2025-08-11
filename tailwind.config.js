@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./App.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
+  content: ['./App.{js,jsx,ts,tsx}', './src/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
   theme: {
     extend: {
@@ -15,9 +15,9 @@ module.exports = {
         mahogany: '#4A2C2A',
         brown: '#5D4E37',
         sienna: '#6B4423',
-        paleWheat: 'rgba(245,222,179,0.4)',
-        peach: '#FFE5B4',
-        apricot: '#FFE4B5',
+        paleWheat: '#FFF5E0',
+        peach: '#FFE4B5',
+        apricot: '#FFE5B4',
         paleCream: '#F5F0E6',
         sageGreen: 'rgba(135,169,107,0.3)',
         terracotta: 'rgba(204,107,90,0.3)',
@@ -27,5 +27,4 @@ module.exports = {
     },
   },
   plugins: [],
-}
-
+};

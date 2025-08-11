@@ -23,10 +23,12 @@ const GameScreen = ({ navigation, route }) => {
 
   // Puzzle states
   const [board, setBoard] = useState(Array(9).fill(Array(9).fill(null)));
-  const [initialBoard, setInitialBoard] = useState(Array(9).fill(Array(9).fill(null)));
+  const [initialBoard, setInitialBoard] = useState(
+    Array(9).fill(Array(9).fill(null)),
+  );
   const [solution, setSolution] = useState(Array(9).fill(Array(9).fill(null))); // eslint-disable-line no-unused-vars
   const [isGenerating, setIsGenerating] = useState(true);
-  
+
   // Game states
   const [selectedCell, setSelectedCell] = useState(null);
   const [notesMode, setNotesMode] = useState(false);
@@ -41,7 +43,7 @@ const GameScreen = ({ navigation, route }) => {
     try {
       setIsGenerating(true);
       const puzzleData = await generatePuzzle(difficulty);
-      
+
       setBoard(puzzleData.puzzle);
       setInitialBoard(puzzleData.puzzle);
       setSolution(puzzleData.solution);
@@ -138,7 +140,7 @@ const GameScreen = ({ navigation, route }) => {
                   {mistakes}/{maxMistakes}
                 </Text>
               </View>
-              
+
               {/* Loading indicator */}
               {isGenerating && (
                 <View className="mt-2">
@@ -154,7 +156,9 @@ const GameScreen = ({ navigation, route }) => {
               board={board}
               initialBoard={initialBoard}
               selectedCell={selectedCell}
-              highlightValue={null}
+              highlightValue={
+                selectedCell ? board[selectedCell.row][selectedCell.col] : null
+              }
               errors={[]}
               notes={notes}
               notesMode={notesMode}

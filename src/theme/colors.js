@@ -52,6 +52,10 @@ export const colors = {
   mahogany: '#4A2C2A',
   brown: '#5D4E37',
   sienna: '#6B4423',
+  peach: '#FFE4B5',
+  paleWheat: '#FFF5E0',
+  lightPink: '#FFC8C8',
+  apricot: '#FFE5B4',
 };
 
 export default themeClasses;
