@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Difficulty Popup Component - Sudoku App Wireframe</title>
+    <link rel="stylesheet" href="shared-styles.css" />
+  </head>
+  <body>
+    <div class="wireframe-container">
+      <div class="header">
+        <h1>Sudoku App - Difficulty Popup Component</h1>
+        <p>Reusable popup for selecting game difficulty</p>
+      </div>
+
+      <div class="screen-wrapper">
+        <h2 class="screen-title">Difficulty Popup Demo</h2>
+        <div class="mobile-frame">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span>⚡ 🔋 📶</span>
+          </div>
+          <div class="screen-content">
+            <!-- Demo screen with button to trigger popup -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 20px;">
+              <p style="text-align: center; color: #8b6b47; font-size: 14px; padding: 0 20px;">
+                Click the button below to see the difficulty selector popup
+              </p>
+              <button class="popup-trigger-btn" onclick="showPopup()">
+                Select Difficulty
+              </button>
+              <p style="text-align: center; color: #8b6b47; font-size: 12px; padding: 0 20px;">
+                This popup component can be reused on any screen where difficulty selection is needed
+              </p>
+            </div>
+          </div>
+          
+          <!-- Popup Component (initially hidden) -->
+          <div id="difficultyPopup" class="popup-overlay popup-hidden">
+        <div class="popup-container">
+          <div class="popup-header">
+            <h3 class="popup-title">Choose Difficulty</h3>
+            <button class="popup-close" onclick="hidePopup()">×</button>
+          </div>
+          <div class="popup-content">
+            <div class="difficulty-popup-cards">
+              <div class="difficulty-popup-card" onclick="selectDifficulty('Easy')">
+                <div class="difficulty-popup-name">Easy</div>
+                <div class="difficulty-popup-desc">Perfect for beginners</div>
+              </div>
+              <div class="difficulty-popup-card" onclick="selectDifficulty('Medium')">
+                <div class="difficulty-popup-name">Medium</div>
+                <div class="difficulty-popup-desc">A moderate challenge</div>
+              </div>
+              <div class="difficulty-popup-card" onclick="selectDifficulty('Hard')">
+                <div class="difficulty-popup-name">Hard</div>
+                <div class="difficulty-popup-desc">For experienced players</div>
+              </div>
+              <div class="difficulty-popup-card" onclick="selectDifficulty('Expert')">
+                <div class="difficulty-popup-name">Expert</div>
+                <div class="difficulty-popup-desc">The ultimate challenge</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="index.html" style="color: #8b6b47; text-decoration: none; font-size: 16px;">
+          ← Back to All Wireframes
+        </a>
+      </div>
+    </div>
+
+    <script>
+      function showPopup() {
+        const popup = document.getElementById('difficultyPopup');
+        popup.classList.remove('popup-hidden');
+      }
+
+      function hidePopup() {
+        const popup = document.getElementById('difficultyPopup');
+        popup.classList.add('popup-hidden');
+      }
+
+      function selectDifficulty(level) {
+        alert(`Selected difficulty: ${level}`);
+        hidePopup();
+      }
+
+      // Close popup when clicking overlay background
+      document.getElementById('difficultyPopup').addEventListener('click', function(e) {
+        if (e.target === this) {
+          hidePopup();
+        }
+      });
+
+      // Add escape key handler
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          hidePopup();
+        }
+      });
+    </script>
+  </body>
+</html>

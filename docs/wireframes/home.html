@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Screen - Sudoku App Wireframe</title>
+    <link rel="stylesheet" href="shared-styles.css" />
+  </head>
+  <body>
+    <div class="wireframe-container">
+      <div class="header">
+        <h1>Sudoku App - Home Screen</h1>
+        <p>Main menu and navigation</p>
+      </div>
+
+      <div class="screen-wrapper">
+        <h2 class="screen-title">Home Screen</h2>
+        <div class="mobile-frame">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span>⚡ 🔋 📶</span>
+          </div>
+          <div class="screen-content">
+            <div class="home-screen">
+              <div class="app-logo">数</div>
+              <h1 class="app-title">Sudoku</h1>
+              <p class="app-subtitle">Classic Puzzle Game</p>
+              <div class="menu-buttons">
+                <button class="btn btn-primary" onclick="showDifficultyPopup()">New Game</button>
+                <button class="btn btn-continue">Continue</button>
+                <button class="btn btn-secondary">How to Play</button>
+                <button class="btn btn-secondary">Statistics</button>
+                <button class="btn btn-secondary">Settings</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Difficulty Popup Component (reusable) -->
+          <div id="difficultyPopup" class="popup-overlay popup-hidden">
+        <div class="popup-container">
+          <div class="popup-header">
+            <h3 class="popup-title">Choose Difficulty</h3>
+            <button class="popup-close" onclick="hideDifficultyPopup()">×</button>
+          </div>
+          <div class="popup-content">
+            <div class="difficulty-popup-cards">
+              <div class="difficulty-popup-card" onclick="selectDifficulty('Easy')">
+                <div class="difficulty-popup-name">Easy</div>
+                <div class="difficulty-popup-desc">Perfect for beginners</div>
+              </div>
+              <div class="difficulty-popup-card" onclick="selectDifficulty('Medium')">
+                <div class="difficulty-popup-name">Medium</div>
+                <div class="difficulty-popup-desc">A moderate challenge</div>
+              </div>
+              <div class="difficulty-popup-card" onclick="selectDifficulty('Hard')">
+                <div class="difficulty-popup-name">Hard</div>
+                <div class="difficulty-popup-desc">For experienced players</div>
+              </div>
+              <div class="difficulty-popup-card" onclick="selectDifficulty('Expert')">
+                <div class="difficulty-popup-name">Expert</div>
+                <div class="difficulty-popup-desc">The ultimate challenge</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="index.html" style="color: #8b6b47; text-decoration: none; font-size: 16px;">
+          ← Back to All Wireframes
+        </a>
+      </div>
+    </div>
+
+    <script>
+      // Add hover effects to buttons
+      document.querySelectorAll(".btn").forEach((btn) => {
+        btn.addEventListener("mouseenter", function () {
+          this.style.transform = "scale(1.05)";
+        });
+        btn.addEventListener("mouseleave", function () {
+          this.style.transform = "scale(1)";
+        });
+      });
+
+      // Popup functions
+      function showDifficultyPopup() {
+        const popup = document.getElementById('difficultyPopup');
+        popup.classList.remove('popup-hidden');
+      }
+
+      function hideDifficultyPopup() {
+        const popup = document.getElementById('difficultyPopup');
+        popup.classList.add('popup-hidden');
+      }
+
+      function selectDifficulty(level) {
+        alert(`Starting new game with ${level} difficulty`);
+        hideDifficultyPopup();
+        // In a real app, this would navigate to the game screen with the selected difficulty
+      }
+
+      // Close popup when clicking overlay background
+      document.getElementById('difficultyPopup').addEventListener('click', function(e) {
+        if (e.target === this) {
+          hideDifficultyPopup();
+        }
+      });
+
+      // Add escape key handler
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          hideDifficultyPopup();
+        }
+      });
+    </script>
+  </body>
+</html>

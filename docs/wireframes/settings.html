@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - Sudoku App Wireframe</title>
+    <link rel="stylesheet" href="shared-styles.css" />
+  </head>
+  <body>
+    <div class="wireframe-container">
+      <div class="header">
+        <h1>Sudoku App - Settings</h1>
+        <p>Game preferences and options</p>
+      </div>
+
+      <div class="screen-wrapper">
+        <h2 class="screen-title">Settings</h2>
+        <div class="mobile-frame">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span>⚡ 🔋 📶</span>
+          </div>
+          <div class="screen-content">
+            <div class="settings-screen">
+              <div class="game-header">
+                <span class="back-arrow">←</span>
+                <span style="font-weight: bold">Settings</span>
+                <span></span>
+              </div>
+              <div class="settings-section">
+                <h3 class="settings-title">Game Options</h3>
+                <div class="setting-item">
+                  <span class="setting-label">Show Timer</span>
+                  <div class="toggle-switch active">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </div>
+                <div class="setting-item">
+                  <span class="setting-label">Auto-Check Errors</span>
+                  <div class="toggle-switch">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </div>
+                <div class="setting-item">
+                  <span class="setting-label">Highlight Numbers</span>
+                  <div class="toggle-switch active">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </div>
+                <div class="setting-item">
+                  <span class="setting-label">Show Hints</span>
+                  <div class="toggle-switch active">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-section">
+                <h3 class="settings-title">Sound & Vibration</h3>
+                <div class="setting-item">
+                  <span class="setting-label">Sound Effects</span>
+                  <div class="toggle-switch">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </div>
+                <div class="setting-item">
+                  <span class="setting-label">Vibration</span>
+                  <div class="toggle-switch active">
+                    <div class="toggle-knob"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-section">
+                <h3 class="settings-title">Theme</h3>
+                <div class="setting-item">
+                  <span class="setting-label">Warm Desert (Active)</span>
+                  <span style="color: #d2691e">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="index.html" style="color: #8b6b47; text-decoration: none; font-size: 16px;">
+          ← Back to All Wireframes
+        </a>
+      </div>
+    </div>
+
+    <script>
+      // Add interactivity to toggle switches
+      document.querySelectorAll(".toggle-switch").forEach((toggle) => {
+        toggle.addEventListener("click", function () {
+          this.classList.toggle("active");
+        });
+      });
+    </script>
+  </body>
+</html>
