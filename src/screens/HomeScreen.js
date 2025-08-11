@@ -3,12 +3,12 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   SafeAreaView,
 } from 'react-native';
 import { hasSavedGame } from '../services/storage';
 import DifficultySelector from '../components/DifficultySelector';
 import packageInfo from '../../package.json';
+import { themeClasses } from '../theme/colors';
 
 /**
  * Home screen - main welcome screen with game options
@@ -52,156 +52,70 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className={themeClasses.safeArea}>
       {showDifficultySelector ? (
-        <View style={styles.difficultyContainer}>
-          <View style={styles.backButtonContainer}>
+        <View className={themeClasses.difficultyContainer}>
+          <View className={themeClasses.backButtonContainer}>
             <TouchableOpacity
-              style={styles.backButton}
+              className={themeClasses.backButton}
               onPress={handleBackFromDifficulty}>
-              <Text style={styles.backButtonText}>← Back</Text>
+              <Text className={themeClasses.backButtonText}>← Back</Text>
             </TouchableOpacity>
           </View>
           <DifficultySelector onSelectDifficulty={handleDifficultySelect} />
         </View>
       ) : (
-        <View style={styles.content}>
-          <Text style={styles.appTitle}>Sudoku</Text>
-          <Text style={styles.subtitle}>Classic Puzzle Game</Text>
+        <View className={themeClasses.content}>
+          {/* Logo with gradient */}
+          <View className={themeClasses.logo}>
+            <Text className={themeClasses.logoText}>数</Text>
+          </View>
           
-          <View style={styles.buttonContainer}>
+          <Text className={themeClasses.appTitle}>Sudoku</Text>
+          <Text className={themeClasses.subtitle}>Classic Puzzle Game</Text>
+          
+          <View className={themeClasses.buttonContainer}>
             <TouchableOpacity
-              style={[styles.button, styles.primaryButton]}
+              className={`${themeClasses.buttonBase} ${themeClasses.primaryButton}`}
               onPress={handleStartNewGame}>
-              <Text style={[styles.buttonText, styles.primaryButtonText]}>New Game</Text>
+              <Text className="text-white">New Game</Text>
             </TouchableOpacity>
             
             {savedGameExists && (
               <TouchableOpacity
-                style={[styles.button, styles.secondaryButton]}
+                className={`${themeClasses.buttonBase} ${themeClasses.continueButton}`}
                 onPress={() => navigation.navigate('Game', { loadSaved: true })}>
-                <Text style={[styles.buttonText, styles.secondaryButtonText]}>Continue</Text>
+                <Text className="text-white">Continue</Text>
               </TouchableOpacity>
             )}
             
             <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
+              className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
               onPress={() => {/* TODO: Navigate to How to Play screen */}}>
-              <Text style={[styles.buttonText, styles.secondaryButtonText]}>How to Play</Text>
+              <Text className="text-white">How to Play</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
+              className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
               onPress={() => {/* TODO: Navigate to Statistics screen */}}>
-              <Text style={[styles.buttonText, styles.secondaryButtonText]}>Statistics</Text>
+              <Text className="text-white">Statistics</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
+              className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
               onPress={() => navigation.navigate('Settings')}>
-              <Text style={[styles.buttonText, styles.secondaryButtonText]}>Settings</Text>
+              <Text className="text-white">Settings</Text>
             </TouchableOpacity>
           </View>
           
-          <Text style={styles.versionText}>v{packageInfo.version}</Text>
+          <Text className={themeClasses.versionText}>v{packageInfo.version}</Text>
         </View>
       )}
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  appTitle: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#1565C0',
-    marginBottom: 8,
-    textAlign: 'center',
-    textShadowColor: 'rgba(21, 101, 192, 0.1)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#666666',
-    marginBottom: 50,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    width: '100%',
-    maxWidth: 280,
-    alignItems: 'center',
-  },
-  button: {
-    width: '100%',
-    paddingHorizontal: 30,
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  primaryButton: {
-    backgroundColor: '#1976D2',
-  },
-  secondaryButton: {
-    backgroundColor: '#42A5F5',
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-  },
-  secondaryButtonText: {
-    color: '#ffffff',
-  },
-  versionText: {
-    position: 'absolute',
-    bottom: 20,
-    color: '#999999',
-    fontSize: 14,
-  },
-  difficultyContainer: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  backButtonContainer: {
-    padding: 20,
-    paddingBottom: 0,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#E3F2FD',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#1976D2',
-  },
-  backButtonText: {
-    color: '#1976D2',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+// All styling is now handled by Tailwind CSS classes via NativeWind
+// No StyleSheet needed - using className props exclusively
 
 export default HomeScreen;

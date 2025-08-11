@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
 } from 'react-native';
 
 /**
@@ -27,32 +26,28 @@ const DIFFICULTIES = [
     description: 'Perfect for beginners',
     minClues: 30,
     maxClues: 35,
-    color: '#4CAF50',
-    gradientColor: '#66BB6A',
+    buttonClass: 'bg-green-500',
   },
   {
     name: 'Medium',
     description: 'Balanced challenge',
     minClues: 25,
     maxClues: 30,
-    color: '#2196F3',
-    gradientColor: '#64B5F6',
+    buttonClass: 'bg-sandy',
   },
   {
     name: 'Hard',
     description: 'For experienced players',
     minClues: 20,
     maxClues: 25,
-    color: '#FF9800',
-    gradientColor: '#FFB74D',
+    buttonClass: 'bg-desertBrown',
   },
   {
     name: 'Expert',
     description: 'Ultimate puzzle mastery',
     minClues: 17,
     maxClues: 20,
-    color: '#F44336',
-    gradientColor: '#EF5350',
+    buttonClass: 'bg-cinnamon',
   },
 ];
 
@@ -75,33 +70,22 @@ const DifficultySelector = ({ onSelectDifficulty, style }) => {
   };
 
   return (
-    <View style={[styles.container, style]}>
-      <Text style={styles.title}>Choose Difficulty</Text>
-      <Text style={styles.subtitle}>Select your preferred challenge level</Text>
+    <View className="flex-1 px-5 py-5 bg-gradient-to-br from-sand to-wheat">
+      <Text className="text-3xl font-bold text-mahogany text-center mb-2">Choose Difficulty</Text>
+      <Text className="text-base text-brown text-center mb-10">Select your preferred challenge level</Text>
       
-      <View style={styles.buttonContainer}>
+      <View className="flex-1 justify-center items-center max-h-96">
         {DIFFICULTIES.map((difficulty) => (
           <TouchableOpacity
             key={difficulty.name}
-            style={[
-              styles.difficultyButton,
-              { backgroundColor: difficulty.color }
-            ]}
+            className={`w-full max-w-80 py-5 px-6 rounded-2xl mb-4 ${difficulty.buttonClass} shadow-lg`}
             onPress={() => handleDifficultyPress(difficulty)}
             activeOpacity={0.8}>
             
-            <View style={styles.buttonContent}>
-              <Text style={styles.difficultyName}>{difficulty.name}</Text>
-              <Text style={styles.difficultyDescription}>{difficulty.description}</Text>
+            <View className="items-center">
+              <Text className="text-xl font-bold text-white mb-1">{difficulty.name}</Text>
+              <Text className="text-sm text-white opacity-90">{difficulty.description}</Text>
             </View>
-            
-            {/* Gradient overlay effect using a lighter color */}
-            <View 
-              style={[
-                styles.gradientOverlay, 
-                { backgroundColor: difficulty.gradientColor }
-              ]} 
-            />
           </TouchableOpacity>
         ))}
       </View>
@@ -109,73 +93,7 @@ const DifficultySelector = ({ onSelectDifficulty, style }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f8f9fa',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1565C0',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    marginBottom: 40,
-  },
-  buttonContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    maxHeight: 400,
-  },
-  difficultyButton: {
-    width: '100%',
-    maxWidth: 300,
-    paddingVertical: 20,
-    paddingHorizontal: 24,
-    borderRadius: 16,
-    marginBottom: 16,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  buttonContent: {
-    alignItems: 'center',
-    zIndex: 2,
-  },
-  difficultyName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 4,
-  },
-  difficultyDescription: {
-    fontSize: 14,
-    color: '#ffffff',
-    opacity: 0.9,
-  },
-  gradientOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: '50%',
-    bottom: 0,
-    opacity: 0.3,
-    zIndex: 1,
-  },
-});
+// All styling is now handled by Tailwind CSS classes via NativeWind
+// No StyleSheet needed - using className props exclusively
 
 export default DifficultySelector;

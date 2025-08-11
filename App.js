@@ -7,6 +7,9 @@ import {
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
 
+// Import global CSS for NativeWind
+import './global.css';
+
 /**
  * Main App component - entry point for the Sudoku application
  * @returns {React.ReactElement} App component
