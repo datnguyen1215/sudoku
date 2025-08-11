@@ -10,7 +10,7 @@ const ControlButton = ({ onPress, disabled, active, children, label }) => (
   <Pressable
     onPress={onPress}
     disabled={disabled}
-    className={`flex-1 py-3 px-2 mx-1 rounded-lg items-center ${
+    className={`flex-1 py-1 px-2 mx-1 rounded-lg items-center ${
       disabled ? 'bg-gray-300' : active ? 'bg-cinnamon' : 'bg-desertBrown'
     }`}
   >

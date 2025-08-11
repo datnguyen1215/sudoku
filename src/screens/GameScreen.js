@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, SafeAreaView, ScrollView } from 'react-native';
 import GameHeader from '../components/GameHeader';
 import Board from '../components/Board';
 import GameControls from '../components/GameControls';
 import NumberPad from '../components/NumberPad';
+import generatePuzzle from '../utils/sudokuGenerator';
 
 /**
  * Main game screen with sudoku board and controls
@@ -14,16 +15,54 @@ import NumberPad from '../components/NumberPad';
  */
 const GameScreen = ({ navigation, route }) => {
   // Get difficulty from route params
-  const difficulty = route?.params?.difficulty?.name || 'Easy';
+  const difficulty = route?.params?.difficulty || {
+    name: 'Easy',
+    minClues: 30,
+    maxClues: 35,
+  };
 
-  // Demo board state - empty for now (no functionality)
-  const [board] = useState(Array(9).fill(Array(9).fill(null)));
-  const [initialBoard] = useState(Array(9).fill(Array(9).fill(null)));
+  // Puzzle states
+  const [board, setBoard] = useState(Array(9).fill(Array(9).fill(null)));
+  const [initialBoard, setInitialBoard] = useState(Array(9).fill(Array(9).fill(null)));
+  const [solution, setSolution] = useState(Array(9).fill(Array(9).fill(null))); // eslint-disable-line no-unused-vars
+  const [isGenerating, setIsGenerating] = useState(true);
+  
+  // Game states
   const [selectedCell, setSelectedCell] = useState(null);
   const [notesMode, setNotesMode] = useState(false);
   const [notes] = useState(Array(9).fill(Array(9).fill([])));
   const [mistakes] = useState(0);
   const maxMistakes = 3;
+
+  /**
+   * Generate a new puzzle with the current difficulty
+   */
+  const generateNewPuzzle = async () => {
+    try {
+      setIsGenerating(true);
+      const puzzleData = await generatePuzzle(difficulty);
+      
+      setBoard(puzzleData.puzzle);
+      setInitialBoard(puzzleData.puzzle);
+      setSolution(puzzleData.solution);
+      setSelectedCell(null); // Reset selection
+    } catch (error) {
+      console.error('Error generating puzzle:', error);
+      // Fallback to empty board if generation fails
+      const emptyBoard = Array(9).fill(Array(9).fill(null));
+      setBoard(emptyBoard);
+      setInitialBoard(emptyBoard);
+      setSolution(emptyBoard);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Generate puzzle when component mounts or difficulty changes
+  useEffect(() => {
+    generateNewPuzzle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [difficulty.name, difficulty.minClues, difficulty.maxClues]);
 
   /**
    * Handle cell press
@@ -74,7 +113,7 @@ const GameScreen = ({ navigation, route }) => {
           onBack={handleBack}
           onPause={handlePause}
           time="00:00"
-          difficulty={difficulty}
+          difficulty={difficulty.name}
         />
 
         {/* Main game area */}
@@ -84,8 +123,9 @@ const GameScreen = ({ navigation, route }) => {
           showsVerticalScrollIndicator={false}
         >
           <View className="flex-1 justify-center py-4">
-            {/* Mistakes counter */}
+            {/* Game info */}
             <View className="px-4 mb-4">
+              {/* Mistakes counter */}
               <View className="flex-row justify-center items-center">
                 <Text className="text-desertBrown mr-2">Mistakes:</Text>
                 <Text
@@ -98,6 +138,15 @@ const GameScreen = ({ navigation, route }) => {
                   {mistakes}/{maxMistakes}
                 </Text>
               </View>
+              
+              {/* Loading indicator */}
+              {isGenerating && (
+                <View className="mt-2">
+                  <Text className="text-center text-desertBrown text-sm">
+                    Generating puzzle...
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Sudoku board */}

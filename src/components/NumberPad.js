@@ -14,7 +14,7 @@ const NumberButton = ({ number, onNumberPress, disabledNumbers, selectedNumber }
     <Pressable
       onPress={() => onNumberPress(number)}
       disabled={isDisabled}
-      className={`flex-1 py-4 mx-1 rounded-xl items-center justify-center ${
+      className={`flex-1 py-2 mx-1 rounded-xl items-center justify-center ${
         isDisabled
           ? 'bg-gray-300'
           : isSelected
