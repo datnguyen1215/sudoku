@@ -27,12 +27,14 @@ const GameScreen = ({ navigation, route }) => {
     boardState,
     gameState,
     uiState,
+    moveHistory,
     generateNewPuzzle,
     loadSavedGame,
     handleCellPress,
     handleNumberPress,
     handleErase,
     handleToggleNotes,
+    handleUndo,
   } = useGameLogic(difficulty);
 
   // Use timer hook
@@ -129,7 +131,9 @@ const GameScreen = ({ navigation, route }) => {
               initialBoard={boardState.initialBoard}
               selectedCell={gameState.selectedCell}
               highlightValue={
-                gameState.selectedCell
+                gameState.selectedCell &&
+                boardState.board &&
+                boardState.board[gameState.selectedCell.row]
                   ? boardState.board[gameState.selectedCell.row][
                       gameState.selectedCell.col
                     ]
@@ -149,8 +153,10 @@ const GameScreen = ({ navigation, route }) => {
           {/* Game control buttons */}
           <GameControls
             onErase={handleErase}
+            onUndo={handleUndo}
             onToggleNotes={handleToggleNotes}
             notesMode={uiState.notesMode}
+            hasHistory={moveHistory.length > 0}
           />
 
           {/* Number pad */}

@@ -47,15 +47,27 @@ const ControlButton = ({ onPress, disabled, active, children, label }) => (
  * Game control buttons component
  * @param {Object} props - Component props
  * @param {Function} props.onErase - Callback for erase action
+ * @param {Function} props.onUndo - Callback for undo action
  * @param {Function} props.onToggleNotes - Callback for toggling notes mode
  * @param {boolean} props.notesMode - Whether notes mode is active
+ * @param {boolean} props.hasHistory - Whether there are moves to undo
  * @returns {React.ReactElement} GameControls component
  */
-const GameControls = ({ onErase, onToggleNotes, notesMode = false }) => {
+const GameControls = ({
+  onErase,
+  onUndo,
+  onToggleNotes,
+  notesMode = false,
+  hasHistory = false,
+}) => {
   return (
     <View className="flex-row px-4 py-2 bg-sand">
       <ControlButton onPress={onErase} disabled={false} label="Erase">
         ⌫
+      </ControlButton>
+
+      <ControlButton onPress={onUndo} disabled={!hasHistory} label="Undo">
+        ↶
       </ControlButton>
 
       <ControlButton onPress={onToggleNotes} active={notesMode} label="Notes">

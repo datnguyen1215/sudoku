@@ -14,6 +14,7 @@ import { saveGame, loadGame, clearSavedGame } from '../services/storage';
 
 // Constants
 const CONFLICT_FLASH_DURATION = 300; // ms
+const MAX_HISTORY = 10;
 
 /**
  * Custom hook to manage Sudoku game logic
@@ -44,6 +45,9 @@ export const useGameLogic = difficulty => {
     conflictingCells: [],
   });
 
+  // Move history for undo functionality
+  const [moveHistory, setMoveHistory] = useState([]);
+
   // Auto-save timer ref
   const saveTimerRef = useRef(null);
   // Conflict animation timer ref
@@ -71,6 +75,7 @@ export const useGameLogic = difficulty => {
 
       // Clear any existing saved game when starting new
       clearSavedGame();
+      setMoveHistory([]);
     } catch (error) {
       console.error('Error generating puzzle:', error);
       setUiState(prev => ({
@@ -106,6 +111,7 @@ export const useGameLogic = difficulty => {
           isGenerating: false,
           generationError: null,
         }));
+        setMoveHistory([]);
         return true;
       } else {
         // No saved game or error - generate new puzzle
@@ -129,7 +135,9 @@ export const useGameLogic = difficulty => {
    */
   const findConflictingCells = (board, row, col, number) => {
     const relatedCells = getRelatedCells(row, col);
-    return relatedCells.filter(cell => board[cell.row][cell.col] === number);
+    return relatedCells.filter(
+      cell => board[cell.row] && board[cell.row][cell.col] === number,
+    );
   };
 
   /**
@@ -158,6 +166,27 @@ export const useGameLogic = difficulty => {
   };
 
   /**
+   * Push current game state to history for undo functionality
+   */
+  const pushToHistory = () => {
+    const snapshot = {
+      board: copyBoard(boardState.board),
+      notes: boardState.notes.map(noteRow =>
+        noteRow.map(cellNotes => [...cellNotes]),
+      ),
+      errors: [...gameState.errors],
+      mistakes: gameState.mistakes,
+    };
+
+    setMoveHistory(prev => {
+      const newHistory = [...prev, snapshot];
+      return newHistory.length > MAX_HISTORY
+        ? newHistory.slice(-MAX_HISTORY)
+        : newHistory;
+    });
+  };
+
+  /**
    * Handle cell press
    * @param {number} row - Row index
    * @param {number} col - Column index
@@ -181,6 +210,9 @@ export const useGameLogic = difficulty => {
 
     // Check if this is a given/fixed cell
     if (boardState.initialBoard[row][col] !== null) return;
+
+    // Push current state to history before making changes
+    pushToHistory();
 
     // Handle notes mode
     if (uiState.notesMode && boardState.board[row][col] === null) {
@@ -234,7 +266,10 @@ export const useGameLogic = difficulty => {
     const newBoard = copyBoard(boardState.board);
 
     // Check if the move is valid against the solution
-    const isValid = number === boardState.solution[row][col];
+    const isValid =
+      boardState.solution &&
+      boardState.solution[row] &&
+      number === boardState.solution[row][col];
 
     if (isValid) {
       // Update the board
@@ -305,6 +340,9 @@ export const useGameLogic = difficulty => {
     // Check if this is a given/fixed cell
     if (boardState.initialBoard[row][col] !== null) return;
 
+    // Push current state to history before making changes
+    pushToHistory();
+
     // Create a deep copy of the board
     const newBoard = copyBoard(boardState.board);
 
@@ -326,6 +364,31 @@ export const useGameLogic = difficulty => {
     setUiState(prev => ({ ...prev, notesMode: !prev.notesMode }));
   };
 
+  /**
+   * Handle undo action
+   */
+  const handleUndo = () => {
+    if (moveHistory.length === 0) return;
+
+    const lastState = moveHistory[moveHistory.length - 1];
+
+    setBoardState(prev => ({
+      ...prev,
+      board: lastState.board,
+      notes: lastState.notes,
+    }));
+
+    setGameState(prev => ({
+      ...prev,
+      errors: lastState.errors,
+      mistakes: lastState.mistakes,
+    }));
+
+    setUiState(prev => ({ ...prev, conflictingCells: [] }));
+
+    setMoveHistory(prev => prev.slice(0, -1));
+  };
+
   // Auto-save game state when it changes (debounced)
   useEffect(() => {
     // Clear existing timer
@@ -334,7 +397,12 @@ export const useGameLogic = difficulty => {
     }
 
     // Don't save if board is empty or generating
-    if (uiState.isGenerating || !boardState.initialBoard[0][0]) {
+    if (
+      uiState.isGenerating ||
+      !boardState.initialBoard ||
+      !boardState.initialBoard[0] ||
+      !boardState.initialBoard[0][0]
+    ) {
       return;
     }
 
@@ -353,9 +421,11 @@ export const useGameLogic = difficulty => {
     return () => {
       if (saveTimerRef.current) {
         clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
       }
       if (conflictTimerRef.current) {
         clearTimeout(conflictTimerRef.current);
+        conflictTimerRef.current = null;
       }
     };
   }, [boardState, gameState, difficulty, uiState.isGenerating]);
@@ -365,6 +435,7 @@ export const useGameLogic = difficulty => {
     boardState,
     gameState,
     uiState,
+    moveHistory,
 
     // Actions
     generateNewPuzzle,
@@ -373,5 +444,6 @@ export const useGameLogic = difficulty => {
     handleNumberPress,
     handleErase,
     handleToggleNotes,
+    handleUndo,
   };
 };
