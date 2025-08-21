@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { hasSavedGame } from '../services/storage';
 import DifficultySelector from '../components/DifficultySelector';
 import Modal from '../components/Modal';
@@ -13,6 +14,7 @@ import { themeClasses } from '../theme/colors';
  * @returns {React.ReactElement} Home screen component
  */
 const HomeScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
   const [savedGameExists, setSavedGameExists] = useState(false);
   const [showDifficultySelector, setShowDifficultySelector] = useState(false);
   const [storageError, setStorageError] = useState(null);
@@ -55,7 +57,10 @@ const HomeScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-sand">
+    <View
+      className="flex-1 bg-sand"
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+    >
       <View className={themeClasses.content}>
         {/* Logo */}
         <View className="w-20 h-20 rounded-2xl bg-cinnamon flex items-center justify-center mb-5 shadow-lg">
@@ -109,7 +114,7 @@ const HomeScreen = ({ navigation }) => {
           onClose={handleBackFromDifficulty}
         />
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 

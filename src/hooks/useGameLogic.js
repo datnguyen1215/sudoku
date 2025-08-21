@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { isValidPlacement, copyBoard } from '../utils/sudokuGenerator';
+import { copyBoard } from '../utils/sudokuGenerator';
 import { createEmptyBoard, createNotesBoard } from '../utils/boardUtils';
 import generatePuzzle from '../utils/sudokuGenerator';
 import { saveGame, loadGame, clearSavedGame } from '../services/storage';
@@ -18,6 +18,7 @@ export const useGameLogic = difficulty => {
   const [boardState, setBoardState] = useState({
     board: createEmptyBoard(),
     initialBoard: createEmptyBoard(),
+    solution: createEmptyBoard(),
     notes: createNotesBoard(),
   });
 
@@ -53,6 +54,7 @@ export const useGameLogic = difficulty => {
       setBoardState({
         board: puzzleData.puzzle,
         initialBoard: puzzleData.puzzle,
+        solution: puzzleData.solution,
         notes: createNotesBoard(),
       });
       setGameState(prev => ({ ...prev, selectedCell: null }));
@@ -70,6 +72,7 @@ export const useGameLogic = difficulty => {
       setBoardState({
         board: emptyBoard,
         initialBoard: emptyBoard,
+        solution: emptyBoard,
         notes: createNotesBoard(),
       });
     } finally {
@@ -131,8 +134,8 @@ export const useGameLogic = difficulty => {
     // Create a deep copy of the board
     const newBoard = copyBoard(boardState.board);
 
-    // Check if the move is valid
-    const isValid = isValidPlacement(newBoard, row, col, number);
+    // Check if the move is valid against the solution
+    const isValid = number === boardState.solution[row][col];
 
     if (isValid) {
       // Update the board

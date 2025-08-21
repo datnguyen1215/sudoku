@@ -1,5 +1,6 @@
 import React from 'react';
-import { SafeAreaView, StatusBar } from 'react-native';
+import { StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
 
@@ -12,12 +13,12 @@ import './global.css';
  */
 const App = () => {
   return (
-    <SafeAreaView className="flex-1 bg-sand">
+    <SafeAreaProvider>
       <StatusBar barStyle="dark-content" backgroundColor="#FAF3E0" />
       <NavigationContainer>
         <AppNavigator />
       </NavigationContainer>
-    </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 

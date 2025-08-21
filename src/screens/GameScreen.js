@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, Text, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GameHeader from '../components/GameHeader';
 import Board from '../components/Board';
 import GameControls from '../components/GameControls';
@@ -16,6 +17,7 @@ import { useTimer } from '../hooks/useTimer';
  * @returns {React.ReactElement} Game screen component
  */
 const GameScreen = ({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   // Get difficulty from route params
   const difficulty = route?.params?.difficulty || DEFAULT_DIFFICULTY;
   const loadSaved = route?.params?.loadSaved || false;
@@ -67,7 +69,10 @@ const GameScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-sand">
+    <View
+      className="flex-1 bg-sand"
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+    >
       <View className="flex-1">
         {/* Header with navigation and timer */}
         <GameHeader
@@ -155,7 +160,7 @@ const GameScreen = ({ navigation, route }) => {
           />
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
