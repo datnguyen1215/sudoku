@@ -67,7 +67,7 @@ const DifficultySelector = ({ onSelectDifficulty, onClose, style }) => {
       {DIFFICULTIES.map(difficulty => (
         <TouchableOpacity
           key={difficulty.name}
-          className="w-full bg-white border-2 border-desertBrown rounded-xl px-4 py-3 mb-3"
+          className="w-full bg-cream border-2 border-desertBrown rounded-xl px-4 py-3 mb-3"
           onPress={() => handleDifficultyPress(difficulty)}
           activeOpacity={0.7}
         >

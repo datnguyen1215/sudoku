@@ -6,7 +6,12 @@ import { View, Text, Pressable } from 'react-native';
  * @param {Object} props - Button props
  * @returns {React.ReactElement} Number button
  */
-const NumberButton = ({ number, onNumberPress, disabledNumbers, selectedNumber }) => {
+const NumberButton = ({
+  number,
+  onNumberPress,
+  disabledNumbers,
+  selectedNumber,
+}) => {
   const isDisabled = disabledNumbers.includes(number);
   const isSelected = selectedNumber === number;
 
@@ -16,16 +21,16 @@ const NumberButton = ({ number, onNumberPress, disabledNumbers, selectedNumber }
       disabled={isDisabled}
       className={`flex-1 py-2 mx-1 rounded-xl items-center justify-center ${
         isDisabled
-          ? 'bg-gray-300'
+          ? 'bg-paleWheat'
           : isSelected
           ? 'bg-cinnamon'
-          : 'bg-white border-2 border-desertBrown'
+          : 'bg-cream border-2 border-desertBrown'
       }`}
     >
       <Text
         className={`text-2xl font-bold ${
           isDisabled
-            ? 'text-gray-500'
+            ? 'text-desertBrown/50'
             : isSelected
             ? 'text-white'
             : 'text-desertBrown'
@@ -54,8 +59,8 @@ const NumberPad = ({
     <View className="px-4 py-3 bg-sand">
       <View className="flex-row">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(number => (
-          <NumberButton 
-            key={number} 
+          <NumberButton
+            key={number}
             number={number}
             onNumberPress={onNumberPress}
             disabledNumbers={disabledNumbers}

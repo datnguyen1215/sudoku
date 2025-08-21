@@ -1,5 +1,10 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
+import {
+  getCellBackground,
+  getBorderStyles,
+  getTextColor,
+} from '../utils/cellStyles';
 
 /**
  * Individual sudoku cell component
@@ -36,46 +41,23 @@ const Cell = ({
   row,
   col,
 }) => {
-  // Determine cell background based on state (priority order matters)
-  const getCellBackground = () => {
-    if (hasError) return 'bg-lightPink';
-    if (isSelected) return 'bg-apricot';
-    if (hasSameValue && value !== null) return 'bg-peach';
-    if (isInSameBox) return 'bg-wheat';
-    if (isInSameRow || isInSameCol) return 'bg-paleWheat';
-    if (isGiven) return 'bg-cream';
-    return 'bg-white';
-  };
-
-  // Determine border styles for 3x3 subgrids
-  const getBorderStyles = () => {
-    let borderClasses = 'border border-desertBrown/30';
-
-    // Thicker borders for 3x3 subgrid boundaries
-    if (row % 3 === 0 && row !== 0)
-      borderClasses += ' border-t-2 border-t-sienna';
-    if (col % 3 === 0 && col !== 0)
-      borderClasses += ' border-l-2 border-l-sienna';
-    if (row === 0) borderClasses += ' border-t-2 border-t-sienna';
-    if (col === 0) borderClasses += ' border-l-2 border-l-sienna';
-
-    // Add selection border
-    if (isSelected) borderClasses += ' border-2 border-cinnamon';
-
-    return borderClasses;
-  };
-
-  // Text color based on cell state
-  const getTextColor = () => {
-    if (hasError) return 'text-red-600';
-    if (isGiven) return 'text-darkChocolate font-bold';
-    return 'text-desertBrown';
-  };
+  // Get styling from utility functions
+  const backgroundClass = getCellBackground({
+    hasError,
+    isSelected,
+    hasSameValue,
+    isInSameRow,
+    isInSameCol,
+    isGiven,
+    value,
+  });
+  const borderClass = getBorderStyles(row, col, isSelected, isInSameBox);
+  const textColorClass = getTextColor(hasError, isGiven);
 
   return (
     <Pressable
       onPress={onPress}
-      className={`aspect-square justify-center items-center ${getCellBackground()} ${getBorderStyles()}`}
+      className={`aspect-square justify-center items-center ${backgroundClass} ${borderClass}`}
     >
       {showNotes && notes.length > 0 ? (
         // Notes mode - show small numbers in grid
@@ -91,7 +73,7 @@ const Cell = ({
       ) : (
         // Normal mode - show single value
         value !== null && (
-          <Text className={`text-xl ${getTextColor()}`}>{value}</Text>
+          <Text className={`text-xl ${textColorClass}`}>{value}</Text>
         )
       )}
     </Pressable>

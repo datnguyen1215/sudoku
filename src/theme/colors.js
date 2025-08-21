@@ -41,21 +41,4 @@ export const themeClasses = {
   modalContent: 'flex-1',
 };
 
-// Color hex values for reference (use sparingly, prefer classes above)
-export const colors = {
-  cinnamon: '#D2691E',
-  desertBrown: '#8B6B47',
-  sandy: '#DDA15E',
-  cream: '#FFF8E7',
-  sand: '#FAF3E0',
-  wheat: '#F5DEB3',
-  mahogany: '#4A2C2A',
-  brown: '#5D4E37',
-  sienna: '#6B4423',
-  peach: '#FFE4B5',
-  paleWheat: '#FFF5E0',
-  lightPink: '#FFC8C8',
-  apricot: '#FFE5B4',
-};
-
 export default themeClasses;

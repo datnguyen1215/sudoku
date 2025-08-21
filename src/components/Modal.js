@@ -47,15 +47,12 @@ const Modal = ({ visible, onClose, children }) => {
       {/* Semi-transparent overlay - appears instantly */}
       <View className="flex-1 bg-black/50 justify-end">
         {/* Tap to close overlay */}
-        <TouchableOpacity
-          className="flex-1"
-          onPress={onClose}
-        />
+        <TouchableOpacity className="flex-1" onPress={onClose} />
 
         {/* Modal content container - slides in with animation */}
         <Animated.View
           style={{ transform: [{ translateY: slideAnim }] }}
-          className="bg-cream rounded-t-2xl border-t-4 border-x-4 border-sienna"
+          className="bg-cream rounded-t-3xl border-t-4 border-x-4 border-mahogany"
         >
           {/* Header section with title and close button */}
           <View className="flex-row justify-between items-center px-5 py-4">

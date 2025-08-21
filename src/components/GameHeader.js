@@ -2,20 +2,14 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 
 /**
- * Game header with navigation, timer, and pause controls
+ * Game header with navigation and timer
  * @param {Object} props - Component props
  * @param {Function} props.onBack - Callback for back navigation
- * @param {Function} props.onPause - Callback for pause button
  * @param {string} props.time - Time display string
  * @param {string} props.difficulty - Current difficulty level
  * @returns {React.ReactElement} GameHeader component
  */
-const GameHeader = ({
-  onBack,
-  onPause,
-  time = '00:00',
-  difficulty = 'Easy',
-}) => {
+const GameHeader = ({ onBack, time = '00:00', difficulty = 'Easy' }) => {
   return (
     <View className="flex-row justify-between items-center px-4 py-3 bg-sand border-b border-desertBrown">
       {/* Back button */}
@@ -32,13 +26,8 @@ const GameHeader = ({
         <Text className="text-xs text-desertBrown">{difficulty}</Text>
       </View>
 
-      {/* Pause button */}
-      <Pressable
-        onPress={onPause}
-        className="p-2 rounded-lg bg-cinnamon"
-      >
-        <Text className="text-white text-base font-semibold">❚❚</Text>
-      </Pressable>
+      {/* Spacer for layout balance */}
+      <View className="p-2 w-12" />
     </View>
   );
 };

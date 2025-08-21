@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, SafeAreaView, ScrollView } from 'react-native';
 import GameHeader from '../components/GameHeader';
 import Board from '../components/Board';
 import GameControls from '../components/GameControls';
 import NumberPad from '../components/NumberPad';
-import generatePuzzle from '../utils/sudokuGenerator';
+import { MAX_MISTAKES, DEFAULT_DIFFICULTY } from '../constants/gameConstants';
+import { useGameLogic } from '../hooks/useGameLogic';
+import { useTimer } from '../hooks/useTimer';
 
 /**
  * Main game screen with sudoku board and controls
@@ -15,74 +17,47 @@ import generatePuzzle from '../utils/sudokuGenerator';
  */
 const GameScreen = ({ navigation, route }) => {
   // Get difficulty from route params
-  const difficulty = route?.params?.difficulty || {
-    name: 'Easy',
-    minClues: 30,
-    maxClues: 35,
-  };
+  const difficulty = route?.params?.difficulty || DEFAULT_DIFFICULTY;
+  const loadSaved = route?.params?.loadSaved || false;
 
-  // Puzzle states
-  const [board, setBoard] = useState(Array(9).fill(Array(9).fill(null)));
-  const [initialBoard, setInitialBoard] = useState(
-    Array(9).fill(Array(9).fill(null)),
-  );
-  const [solution, setSolution] = useState(Array(9).fill(Array(9).fill(null))); // eslint-disable-line no-unused-vars
-  const [isGenerating, setIsGenerating] = useState(true);
+  // Use custom hook for game logic
+  const {
+    boardState,
+    gameState,
+    uiState,
+    generateNewPuzzle,
+    loadSavedGame,
+    handleCellPress,
+    handleNumberPress,
+    handleErase,
+    handleToggleNotes,
+  } = useGameLogic(difficulty);
 
-  // Game states
-  const [selectedCell, setSelectedCell] = useState(null);
-  const [notesMode, setNotesMode] = useState(false);
-  const [notes] = useState(Array(9).fill(Array(9).fill([])));
-  const [mistakes] = useState(0);
-  const maxMistakes = 3;
+  // Use timer hook
+  const timer = useTimer();
 
-  /**
-   * Generate a new puzzle with the current difficulty
-   */
-  const generateNewPuzzle = async () => {
-    try {
-      setIsGenerating(true);
-      const puzzleData = await generatePuzzle(difficulty);
-
-      setBoard(puzzleData.puzzle);
-      setInitialBoard(puzzleData.puzzle);
-      setSolution(puzzleData.solution);
-      setSelectedCell(null); // Reset selection
-    } catch (error) {
-      console.error('Error generating puzzle:', error);
-      // Fallback to empty board if generation fails
-      const emptyBoard = Array(9).fill(Array(9).fill(null));
-      setBoard(emptyBoard);
-      setInitialBoard(emptyBoard);
-      setSolution(emptyBoard);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  // Generate puzzle when component mounts or difficulty changes
+  // Generate puzzle or load saved game when component mounts
   useEffect(() => {
-    generateNewPuzzle();
+    const initGame = async () => {
+      if (loadSaved) {
+        await loadSavedGame();
+      } else {
+        await generateNewPuzzle();
+      }
+      timer.reset();
+      timer.start();
+    };
+    initGame();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [difficulty.name, difficulty.minClues, difficulty.maxClues]);
+  }, [difficulty.name, difficulty.minClues, difficulty.maxClues, loadSaved]);
 
-  /**
-   * Handle cell press
-   * @param {number} row - Row index
-   * @param {number} col - Column index
-   */
-  const handleCellPress = (row, col) => {
-    setSelectedCell({ row, col });
-  };
-
-  /**
-   * Handle number pad press
-   * @param {number} number - Number pressed
-   */
-  const handleNumberPress = number => {
-    // No functionality - just for layout
-    console.log('Number pressed:', number);
-  };
+  // Stop timer if game is won or too many mistakes
+  useEffect(() => {
+    if (gameState.mistakes >= MAX_MISTAKES) {
+      timer.stop();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState.mistakes]);
 
   /**
    * Handle back navigation
@@ -91,30 +66,13 @@ const GameScreen = ({ navigation, route }) => {
     navigation.goBack();
   };
 
-  /**
-   * Handle pause
-   */
-  const handlePause = () => {
-    // No functionality - just for layout
-    console.log('Pause pressed');
-  };
-
-  /**
-   * Handle control actions
-   */
-  const handleUndo = () => console.log('Undo');
-  const handleErase = () => console.log('Erase');
-  const handleToggleNotes = () => setNotesMode(!notesMode);
-  const handleHint = () => console.log('Hint');
-
   return (
     <SafeAreaView className="flex-1 bg-sand">
       <View className="flex-1">
         {/* Header with navigation and timer */}
         <GameHeader
           onBack={handleBack}
-          onPause={handlePause}
-          time="00:00"
+          time={timer.formattedTime}
           difficulty={difficulty.name}
         />
 
@@ -132,20 +90,29 @@ const GameScreen = ({ navigation, route }) => {
                 <Text className="text-desertBrown mr-2">Mistakes:</Text>
                 <Text
                   className={`font-bold ${
-                    mistakes >= maxMistakes
+                    gameState.mistakes >= MAX_MISTAKES
                       ? 'text-red-600'
                       : 'text-darkChocolate'
                   }`}
                 >
-                  {mistakes}/{maxMistakes}
+                  {gameState.mistakes}/{MAX_MISTAKES}
                 </Text>
               </View>
 
               {/* Loading indicator */}
-              {isGenerating && (
+              {uiState.isGenerating && (
                 <View className="mt-2">
                   <Text className="text-center text-desertBrown text-sm">
                     Generating puzzle...
+                  </Text>
+                </View>
+              )}
+
+              {/* Error indicator */}
+              {uiState.generationError && (
+                <View className="mt-2">
+                  <Text className="text-center text-red-600 text-sm">
+                    {uiState.generationError}
                   </Text>
                 </View>
               )}
@@ -153,15 +120,19 @@ const GameScreen = ({ navigation, route }) => {
 
             {/* Sudoku board */}
             <Board
-              board={board}
-              initialBoard={initialBoard}
-              selectedCell={selectedCell}
+              board={boardState.board}
+              initialBoard={boardState.initialBoard}
+              selectedCell={gameState.selectedCell}
               highlightValue={
-                selectedCell ? board[selectedCell.row][selectedCell.col] : null
+                gameState.selectedCell
+                  ? boardState.board[gameState.selectedCell.row][
+                      gameState.selectedCell.col
+                    ]
+                  : null
               }
-              errors={[]}
-              notes={notes}
-              notesMode={notesMode}
+              errors={gameState.errors}
+              notes={boardState.notes}
+              notesMode={uiState.notesMode}
               onCellPress={handleCellPress}
             />
           </View>
@@ -171,13 +142,9 @@ const GameScreen = ({ navigation, route }) => {
         <View className="bg-sand border-t border-desertBrown/20">
           {/* Game control buttons */}
           <GameControls
-            onUndo={handleUndo}
             onErase={handleErase}
             onToggleNotes={handleToggleNotes}
-            onHint={handleHint}
-            notesMode={notesMode}
-            canUndo={false}
-            hintsRemaining={3}
+            notesMode={uiState.notesMode}
           />
 
           {/* Number pad */}

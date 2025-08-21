@@ -1,6 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
 import Cell from './Cell';
+import { BOX_SIZE } from '../utils/sudokuGenerator';
+import { createEmptyBoard, createNotesBoard } from '../utils/boardUtils';
 
 /**
  * Sudoku board component with 9x9 grid
@@ -16,15 +18,19 @@ import Cell from './Cell';
  * @returns {React.ReactElement} Board component
  */
 const Board = ({
-  board = Array(9).fill(Array(9).fill(null)),
-  initialBoard = Array(9).fill(Array(9).fill(null)),
+  board = null,
+  initialBoard = null,
   selectedCell = null,
   highlightValue = null,
   errors = [],
-  notes = Array(9).fill(Array(9).fill([])),
+  notes = null,
   notesMode = false,
   onCellPress = () => {},
 }) => {
+  // Use utility functions for default boards if not provided
+  const actualBoard = board || createEmptyBoard();
+  const actualInitialBoard = initialBoard || createEmptyBoard();
+  const actualNotes = notes || createNotesBoard();
   /**
    * Check if cell has error
    * @param {number} row - Row index
@@ -53,7 +59,7 @@ const Board = ({
    * @returns {number} Box index
    */
   const getBoxIndex = (row, col) => {
-    return Math.floor(row / 3) * 3 + Math.floor(col / 3);
+    return Math.floor(row / BOX_SIZE) * BOX_SIZE + Math.floor(col / BOX_SIZE);
   };
 
   /**
@@ -71,7 +77,7 @@ const Board = ({
   return (
     <View className="bg-sienna p-0.5 rounded-lg mx-4 aspect-square">
       <View className="flex-row flex-wrap">
-        {board.map((row, rowIndex) =>
+        {actualBoard.map((row, rowIndex) =>
           row.map((value, colIndex) => (
             <View
               key={`${rowIndex}-${colIndex}`}
@@ -79,7 +85,7 @@ const Board = ({
             >
               <Cell
                 value={value}
-                isGiven={initialBoard[rowIndex][colIndex] !== null}
+                isGiven={actualInitialBoard[rowIndex][colIndex] !== null}
                 isSelected={
                   selectedCell &&
                   selectedCell.row === rowIndex &&
@@ -100,11 +106,11 @@ const Board = ({
                 }
                 hasSameValue={
                   selectedCell &&
-                  board[selectedCell.row][selectedCell.col] !== null &&
-                  board[selectedCell.row][selectedCell.col] === value
+                  actualBoard[selectedCell.row][selectedCell.col] !== null &&
+                  actualBoard[selectedCell.row][selectedCell.col] === value
                 }
                 showNotes={notesMode && value === null}
-                notes={notes[rowIndex][colIndex]}
+                notes={actualNotes[rowIndex][colIndex]}
                 onPress={() => onCellPress(rowIndex, colIndex)}
                 row={rowIndex}
                 col={colIndex}

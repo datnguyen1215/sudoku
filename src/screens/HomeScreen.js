@@ -15,11 +15,18 @@ import { themeClasses } from '../theme/colors';
 const HomeScreen = ({ navigation }) => {
   const [savedGameExists, setSavedGameExists] = useState(false);
   const [showDifficultySelector, setShowDifficultySelector] = useState(false);
+  const [storageError, setStorageError] = useState(null);
 
   useEffect(() => {
     const checkForSavedGame = async () => {
-      const exists = await hasSavedGame();
-      setSavedGameExists(exists);
+      const result = await hasSavedGame();
+      if (result.success) {
+        setSavedGameExists(result.exists);
+        setStorageError(null);
+      } else {
+        setSavedGameExists(false);
+        setStorageError('Unable to check saved games');
+      }
     };
     checkForSavedGame();
   }, []);
@@ -58,6 +65,12 @@ const HomeScreen = ({ navigation }) => {
         <Text className={themeClasses.appTitle}>Sudoku</Text>
         <Text className={themeClasses.subtitle}>Classic Puzzle Game</Text>
 
+        {storageError && (
+          <Text className="text-red-600 text-sm mb-2 text-center">
+            {storageError}
+          </Text>
+        )}
+
         <View className={themeClasses.buttonContainer}>
           <TouchableOpacity
             className={`${themeClasses.buttonBase} ${themeClasses.primaryButton}`}
@@ -80,22 +93,6 @@ const HomeScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('HowToPlay')}
           >
             <Text className="text-white">How to Play</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
-            onPress={() => {
-              /* TODO: Navigate to Statistics screen */
-            }}
-          >
-            <Text className="text-white">Statistics</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className={`${themeClasses.buttonBase} ${themeClasses.secondaryButton}`}
-            onPress={() => navigation.navigate('Settings')}
-          >
-            <Text className="text-white">Settings</Text>
           </TouchableOpacity>
         </View>
 
