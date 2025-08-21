@@ -3,10 +3,17 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { copyBoard } from '../utils/sudokuGenerator';
+import {
+  copyBoard,
+  isValidPlacement,
+  getRelatedCells,
+} from '../utils/sudokuGenerator';
 import { createEmptyBoard, createNotesBoard } from '../utils/boardUtils';
 import generatePuzzle from '../utils/sudokuGenerator';
 import { saveGame, loadGame, clearSavedGame } from '../services/storage';
+
+// Constants
+const CONFLICT_FLASH_DURATION = 300; // ms
 
 /**
  * Custom hook to manage Sudoku game logic
@@ -34,10 +41,13 @@ export const useGameLogic = difficulty => {
     notesMode: false,
     isGenerating: true,
     generationError: null,
+    conflictingCells: [],
   });
 
   // Auto-save timer ref
   const saveTimerRef = useRef(null);
+  // Conflict animation timer ref
+  const conflictTimerRef = useRef(null);
 
   /**
    * Generate a new puzzle with the current difficulty
@@ -110,6 +120,44 @@ export const useGameLogic = difficulty => {
   };
 
   /**
+   * Find cells that conflict with a potential note placement
+   * @param {Array} board - Current board state
+   * @param {number} row - Row to check
+   * @param {number} col - Column to check
+   * @param {number} number - Number to check
+   * @returns {Array} Array of conflicting cell positions
+   */
+  const findConflictingCells = (board, row, col, number) => {
+    const relatedCells = getRelatedCells(row, col);
+    return relatedCells.filter(cell => board[cell.row][cell.col] === number);
+  };
+
+  /**
+   * Remove a specific number from notes in related cells
+   * @param {Array} notes - Current notes board
+   * @param {number} row - Row of placed number
+   * @param {number} col - Column of placed number
+   * @param {number} number - Number to remove from notes
+   * @returns {Array} Updated notes board
+   */
+  const removeNotesFromRelatedCells = (notes, row, col, number) => {
+    const newNotes = notes.map(noteRow =>
+      noteRow.map(cellNotes => [...cellNotes]),
+    );
+
+    const relatedCells = getRelatedCells(row, col);
+
+    for (const cell of relatedCells) {
+      const idx = newNotes[cell.row][cell.col].indexOf(number);
+      if (idx > -1) {
+        newNotes[cell.row][cell.col].splice(idx, 1);
+      }
+    }
+
+    return newNotes;
+  };
+
+  /**
    * Handle cell press
    * @param {number} row - Row index
    * @param {number} col - Column index
@@ -123,6 +171,9 @@ export const useGameLogic = difficulty => {
    * @param {number} number - Number pressed
    */
   const handleNumberPress = number => {
+    // Validate number input
+    if (!number || number < 1 || number > 9) return;
+
     // Check if a cell is selected
     if (!gameState.selectedCell) return;
 
@@ -130,6 +181,54 @@ export const useGameLogic = difficulty => {
 
     // Check if this is a given/fixed cell
     if (boardState.initialBoard[row][col] !== null) return;
+
+    // Handle notes mode
+    if (uiState.notesMode && boardState.board[row][col] === null) {
+      // Create a deep copy of the notes board
+      const newNotes = boardState.notes.map(noteRow =>
+        noteRow.map(cellNotes => [...cellNotes]),
+      );
+
+      // Toggle the note for this number
+      const cellNotes = newNotes[row][col];
+      const noteIndex = cellNotes.indexOf(number);
+
+      if (noteIndex > -1) {
+        // Remove the note if it exists
+        cellNotes.splice(noteIndex, 1);
+      } else {
+        // Only add the note if it's a valid placement
+        if (isValidPlacement(boardState.board, row, col, number)) {
+          cellNotes.push(number);
+          cellNotes.sort((a, b) => a - b); // Keep notes sorted
+        } else {
+          // Find and flash conflicting cells
+          const conflicts = findConflictingCells(
+            boardState.board,
+            row,
+            col,
+            number,
+          );
+
+          // Clear any existing conflict timer
+          if (conflictTimerRef.current) {
+            clearTimeout(conflictTimerRef.current);
+          }
+
+          setUiState(prev => ({ ...prev, conflictingCells: conflicts }));
+
+          // Set new timer with ref for cleanup
+          conflictTimerRef.current = setTimeout(() => {
+            setUiState(prev => ({ ...prev, conflictingCells: [] }));
+            conflictTimerRef.current = null;
+          }, CONFLICT_FLASH_DURATION);
+        }
+      }
+
+      // Update the notes in board state
+      setBoardState(prev => ({ ...prev, notes: newNotes }));
+      return; // Exit early for notes mode
+    }
 
     // Create a deep copy of the board
     const newBoard = copyBoard(boardState.board);
@@ -140,7 +239,22 @@ export const useGameLogic = difficulty => {
     if (isValid) {
       // Update the board
       newBoard[row][col] = number;
-      setBoardState(prev => ({ ...prev, board: newBoard }));
+
+      // Clear notes for this cell and remove this number from related cells
+      let newNotes = boardState.notes.map((noteRow, rIdx) =>
+        noteRow.map((cellNotes, cIdx) =>
+          rIdx === row && cIdx === col ? [] : cellNotes,
+        ),
+      );
+
+      // Remove this number from notes in related cells (row, column, box)
+      newNotes = removeNotesFromRelatedCells(newNotes, row, col, number);
+
+      setBoardState(prev => ({
+        ...prev,
+        board: newBoard,
+        notes: newNotes,
+      }));
 
       // Clear any existing error for this cell
       setGameState(prev => ({
@@ -162,7 +276,20 @@ export const useGameLogic = difficulty => {
 
       // Still update the board with the invalid number so user can see it
       newBoard[row][col] = number;
-      setBoardState(prev => ({ ...prev, board: newBoard }));
+
+      // Clear notes for this cell even when placing invalid number
+      // (but don't remove from related cells since it's invalid)
+      const newNotes = boardState.notes.map((noteRow, rIdx) =>
+        noteRow.map((cellNotes, cIdx) =>
+          rIdx === row && cIdx === col ? [] : cellNotes,
+        ),
+      );
+
+      setBoardState(prev => ({
+        ...prev,
+        board: newBoard,
+        notes: newNotes,
+      }));
     }
   };
 
@@ -222,10 +349,13 @@ export const useGameLogic = difficulty => {
       saveGame(gameData);
     }, 1000);
 
-    // Cleanup timer on unmount
+    // Cleanup timers on unmount
     return () => {
       if (saveTimerRef.current) {
         clearTimeout(saveTimerRef.current);
+      }
+      if (conflictTimerRef.current) {
+        clearTimeout(conflictTimerRef.current);
       }
     };
   }, [boardState, gameState, difficulty, uiState.isGenerating]);

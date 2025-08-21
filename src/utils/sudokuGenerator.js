@@ -235,11 +235,63 @@ const generatePuzzle = async difficulty => {
   });
 };
 
+/**
+ * Gets all cells related to a given position (same row, column, or box)
+ * @param {number} row - Row index (0-8)
+ * @param {number} col - Column index (0-8)
+ * @returns {Array<{row: number, col: number}>} Array of related cell positions
+ */
+const getRelatedCells = (row, col) => {
+  const cells = [];
+  const seen = new Set();
+
+  // Add cells from same row
+  for (let c = 0; c < BOARD_SIZE; c++) {
+    if (c !== col) {
+      const key = `${row},${c}`;
+      if (!seen.has(key)) {
+        cells.push({ row, col: c });
+        seen.add(key);
+      }
+    }
+  }
+
+  // Add cells from same column
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    if (r !== row) {
+      const key = `${r},${col}`;
+      if (!seen.has(key)) {
+        cells.push({ row: r, col });
+        seen.add(key);
+      }
+    }
+  }
+
+  // Add cells from same 3x3 box
+  const boxStartRow = Math.floor(row / BOX_SIZE) * BOX_SIZE;
+  const boxStartCol = Math.floor(col / BOX_SIZE) * BOX_SIZE;
+
+  for (let r = boxStartRow; r < boxStartRow + BOX_SIZE; r++) {
+    for (let c = boxStartCol; c < boxStartCol + BOX_SIZE; c++) {
+      if (r !== row || c !== col) {
+        const key = `${r},${c}`;
+        if (!seen.has(key)) {
+          cells.push({ row: r, col: c });
+          seen.add(key);
+        }
+      }
+    }
+  }
+
+  return cells;
+};
+
 export default generatePuzzle;
 export {
   isValidPlacement,
   copyBoard,
   generateEmptyBoard,
+  getRelatedCells,
   BOARD_SIZE,
   BOX_SIZE,
 };

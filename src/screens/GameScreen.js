@@ -138,6 +138,7 @@ const GameScreen = ({ navigation, route }) => {
               errors={gameState.errors}
               notes={boardState.notes}
               notesMode={uiState.notesMode}
+              conflictingCells={uiState.conflictingCells}
               onCellPress={handleCellPress}
             />
           </View>

@@ -14,6 +14,7 @@ import { createEmptyBoard, createNotesBoard } from '../utils/boardUtils';
  * @param {Array} props.errors - Array of error cells [{row, col}]
  * @param {Array} props.notes - 9x9 2D array of cell notes
  * @param {boolean} props.notesMode - Whether notes mode is active
+ * @param {Array} props.conflictingCells - Array of conflicting cells [{row, col}]
  * @param {Function} props.onCellPress - Callback when cell is pressed
  * @returns {React.ReactElement} Board component
  */
@@ -25,6 +26,7 @@ const Board = ({
   errors = [],
   notes = null,
   notesMode = false,
+  conflictingCells = [],
   onCellPress = () => {},
 }) => {
   // Use utility functions for default boards if not provided
@@ -39,6 +41,16 @@ const Board = ({
    */
   const hasError = (row, col) => {
     return errors.some(error => error.row === row && error.col === col);
+  };
+
+  /**
+   * Check if cell is conflicting
+   * @param {number} row - Row index
+   * @param {number} col - Column index
+   * @returns {boolean} Whether cell is conflicting
+   */
+  const isConflicting = (row, col) => {
+    return conflictingCells.some(cell => cell.row === row && cell.col === col);
   };
 
   /**
@@ -93,6 +105,7 @@ const Board = ({
                 }
                 isHighlighted={shouldHighlight(value)}
                 hasError={hasError(rowIndex, colIndex)}
+                isConflicting={isConflicting(rowIndex, colIndex)}
                 isInSameRow={selectedCell && selectedCell.row === rowIndex}
                 isInSameCol={selectedCell && selectedCell.col === colIndex}
                 isInSameBox={
@@ -109,8 +122,9 @@ const Board = ({
                   actualBoard[selectedCell.row][selectedCell.col] !== null &&
                   actualBoard[selectedCell.row][selectedCell.col] === value
                 }
-                showNotes={notesMode && value === null}
+                showNotes={value === null}
                 notes={actualNotes[rowIndex][colIndex]}
+                highlightValue={highlightValue}
                 onPress={() => onCellPress(rowIndex, colIndex)}
                 row={rowIndex}
                 col={colIndex}

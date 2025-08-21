@@ -9,6 +9,7 @@
  */
 export const getCellBackground = ({
   hasError,
+  isConflicting,
   isSelected,
   hasSameValue,
   isInSameRow,
@@ -16,6 +17,7 @@ export const getCellBackground = ({
   isGiven,
   value,
 }) => {
+  if (isConflicting) return 'bg-red-500';
   if (hasError) return 'bg-lightPink';
   if (isSelected) return 'bg-apricot';
   if (hasSameValue && value !== null) return 'bg-apricot';

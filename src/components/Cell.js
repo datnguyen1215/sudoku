@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import {
   getCellBackground,
@@ -14,12 +14,14 @@ import {
  * @param {boolean} props.isSelected - Whether cell is currently selected
  * @param {boolean} props.isHighlighted - Whether cell has same number as selected
  * @param {boolean} props.hasError - Whether cell has an error
+ * @param {boolean} props.isConflicting - Whether cell is conflicting with note attempt
  * @param {boolean} props.isInSameRow - Whether cell is in same row as selected
  * @param {boolean} props.isInSameCol - Whether cell is in same column as selected
  * @param {boolean} props.isInSameBox - Whether cell is in same 3x3 box as selected
  * @param {boolean} props.hasSameValue - Whether cell has same value as selected
  * @param {boolean} props.showNotes - Whether to show notes mode
  * @param {Array} props.notes - Array of note numbers (1-9)
+ * @param {number} props.highlightValue - Value to highlight in notes
  * @param {Function} props.onPress - Callback when cell is pressed
  * @param {number} props.row - Row index (0-8)
  * @param {number} props.col - Column index (0-8)
@@ -31,12 +33,14 @@ const Cell = ({
   isSelected = false,
   isHighlighted = false,
   hasError = false,
+  isConflicting = false,
   isInSameRow = false,
   isInSameCol = false,
   isInSameBox = false,
   hasSameValue = false,
   showNotes = false,
   notes = [],
+  highlightValue = null,
   onPress,
   row,
   col,
@@ -44,6 +48,7 @@ const Cell = ({
   // Get styling from utility functions
   const backgroundClass = getCellBackground({
     hasError,
+    isConflicting,
     isSelected,
     hasSameValue,
     isInSameRow,
@@ -65,7 +70,15 @@ const Cell = ({
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
             <View key={num} className="w-1/3 h-1/3 justify-center items-center">
               {notes.includes(num) && (
-                <Text className="text-xs text-desertBrown/60">{num}</Text>
+                <Text
+                  className={`text-xs ${
+                    num === highlightValue
+                      ? 'text-cinnamon font-bold'
+                      : 'text-desertBrown/60'
+                  }`}
+                >
+                  {num}
+                </Text>
               )}
             </View>
           ))}
@@ -80,4 +93,28 @@ const Cell = ({
   );
 };
 
-export default Cell;
+/**
+ * Custom comparison function for React.memo
+ * Only re-render if relevant props have changed
+ */
+const arePropsEqual = (prevProps, nextProps) => {
+  return (
+    prevProps.value === nextProps.value &&
+    prevProps.isGiven === nextProps.isGiven &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isHighlighted === nextProps.isHighlighted &&
+    prevProps.hasError === nextProps.hasError &&
+    prevProps.isConflicting === nextProps.isConflicting &&
+    prevProps.isInSameRow === nextProps.isInSameRow &&
+    prevProps.isInSameCol === nextProps.isInSameCol &&
+    prevProps.isInSameBox === nextProps.isInSameBox &&
+    prevProps.hasSameValue === nextProps.hasSameValue &&
+    prevProps.showNotes === nextProps.showNotes &&
+    prevProps.highlightValue === nextProps.highlightValue &&
+    prevProps.row === nextProps.row &&
+    prevProps.col === nextProps.col &&
+    JSON.stringify(prevProps.notes) === JSON.stringify(nextProps.notes)
+  );
+};
+
+export default memo(Cell, arePropsEqual);
